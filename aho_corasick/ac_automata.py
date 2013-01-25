@@ -1,7 +1,8 @@
 
+# Node represents a state, Node.next represents the edges, 
 class Node(object):
 	def __init__(self):
-		self.next = {}
+		self.next = {} # stores the edges to its children,
 		self.f = 0 #the total number of samples which ends at this point
 		self.fail = -1
 
@@ -9,6 +10,7 @@ class AC_AutoMata(object):
 	def __init__(self):
 		self.root = Node()	
 
+	#no more than building a trie tree
 	def insert_sample(self, text):
 		p = self.root
 		for ch in text:
@@ -17,6 +19,8 @@ class AC_AutoMata(object):
 			p = p.next[ch]
 		p.f += 1	
 
+	#use the broad first method to build the fail translation of each node, which can accumulate the
+	#searching process
 	def build_graph(self):
 		q = []
 		q.append(self.root)
@@ -33,7 +37,7 @@ class AC_AutoMata(object):
 					v.fail = self.root
 				q.append(v)
 
-
+	#visuallize the trie tree with fail translation
 	def _print_tree(self, node, lvl, node_tag):
 		blank = ['\t' for i in xrange(lvl)]
 		print ''.join(blank), node_tag, '(self:', id(self), 'fail_ptr:', id(node.fail), ')'
