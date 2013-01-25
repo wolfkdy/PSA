@@ -10,4 +10,4 @@ most of the implementions are with low time complexity,
 
 however, with the slow speed of python, the overall performance is not very good
 
-if you want a perfect edition，i suggest implementing it with c/c++ and wrap it into python
+the best practise is implementing it with c/c++ 
