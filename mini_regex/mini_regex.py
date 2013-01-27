@@ -1,3 +1,5 @@
+#-*- coding: utf-8 -*-
+
 import thompson_automata as nfa
 import nfa2dfa
 

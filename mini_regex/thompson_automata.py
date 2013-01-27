@@ -1,3 +1,5 @@
+#-*- coding: utf-8 -*-
+
 import nfa2dfa
 
 def trim_blank(text):
@@ -42,6 +44,7 @@ class NFA_Node(object):
 		NFA_CNT += 1
 
 # state of (...)** [ two *] is illegal, but has not yet deal with it
+# state of a* is illegal, (a)* is correct, 
 class Thompson_AutoMata(object):
 	def __init__(self):
 		self.start = NFA_Node()
@@ -125,32 +128,14 @@ class Thompson_AutoMata(object):
 
 		am1 = Thompson_AutoMata()
 		am1.build_complex(text[right : ])
-		'''
-		if right < len(text):
-			am1 = Thompson_AutoMata()
-			am1.build_complex(text[right : ])
-		else :
-			am1 = None
-		'''
 		#use an eps trans to merge the end state of cur automata \
 		#and the begin state of new automata
 		self.end.eps_set.add(am1.start)
 		self.end = am1.end
-		'''
-		# build a automata of null str is ok, but not easy to debug
-		if am1 is not None:
-			am.end.eps_set.add(am1.start)
-			#here, replace self.end with sub_automata.end
-			#how about sub_automata.start ????, replace with what ?
-			self.end = am1.end
-		else :
-			self.end = am.end
-		'''
 
 if __name__ == '__main__':
 	test_str = '(b)*'
 	a = Thompson_AutoMata()	
 	a.build(test_str)
-	a.print_graph(), 
-	print '??????????????'
+	a.print_graph()
 

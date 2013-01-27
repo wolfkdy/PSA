@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 
 DFA_CNT = 0
 class DFA_Node(object):
