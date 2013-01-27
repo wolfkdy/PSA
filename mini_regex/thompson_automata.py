@@ -1,3 +1,5 @@
+import nfa2dfa
+
 def trim_blank(text):
 	return text.replace(' ', '').replace('\t', '')
 
@@ -30,10 +32,14 @@ def get_substrs_by_or(text):
 	ret.append(text[left : right])
 	return ret
 
+NFA_CNT = 0
 class NFA_Node(object):
 	def __init__(self):
+		global NFA_CNT
 		self.edges = dict()
 		self.eps_set = set()
+		self.index = NFA_CNT
+		NFA_CNT += 1
 
 # state of (...)** [ two *] is illegal, but has not yet deal with it
 class Thompson_AutoMata(object):
@@ -72,18 +78,18 @@ class Thompson_AutoMata(object):
 			tmp = q[0]
 			q = q[1 : ]
 			for k, v in tmp.edges.iteritems():
-				print id(tmp), '---', k, '--->', id(v)
+				print tmp.index, '---', k, '--->', v.index
 				if v in tabu:
 					continue
 				tabu.add(v)
 				q.append(v)	
 			for v in tmp.eps_set:
-				print id(tmp), '---', 'eps', '--->', id(v)
+				print tmp.index, '---', 'eps', '--->', v.index
 				if v in tabu:
 					continue
 				tabu.add(v)
 				q.append(v)
-		print 'start', id(self.start), 'end', id(self.end)
+		print 'start', self.start.index, 'end', self.end.index
 	
 	#the regex @depth 0 is a not with | rule
 	def build_single(self, text):
@@ -106,23 +112,31 @@ class Thompson_AutoMata(object):
 				right = right + 2
 			#()(...)
 			else :
+				self.end.eps_set.add(am.start)
+				self.end = am.end
 				right += 1
 		else :
 			am = Thompson_AutoMata()
 			am.unaccept_eps()
 			am.start.edges[text[0]] = am.end
+			self.end.eps_set.add(am.start)
+			self.end = am.end
 			right = 1
 
+		am1 = Thompson_AutoMata()
+		am1.build_complex(text[right : ])
+		'''
 		if right < len(text):
 			am1 = Thompson_AutoMata()
 			am1.build_complex(text[right : ])
 		else :
 			am1 = None
-
+		'''
 		#use an eps trans to merge the end state of cur automata \
 		#and the begin state of new automata
-		self.end.eps_set.add(am.start)
-
+		self.end.eps_set.add(am1.start)
+		self.end = am1.end
+		'''
 		# build a automata of null str is ok, but not easy to debug
 		if am1 is not None:
 			am.end.eps_set.add(am1.start)
@@ -131,11 +145,12 @@ class Thompson_AutoMata(object):
 			self.end = am1.end
 		else :
 			self.end = am.end
+		'''
 
 if __name__ == '__main__':
-	test_str = '(a)*'
+	test_str = '(b)*'
 	a = Thompson_AutoMata()	
 	a.build(test_str)
-	a.print_graph()
-	print a
+	a.print_graph(), 
+	print '??????????????'
 
