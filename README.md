@@ -2,9 +2,12 @@ PSA
 ===
 
 Python String Automata
-(AhoCorasick AutoMata, Ukkonen's suffixTree)
 
 some experimental implemention of string automations write in python
+
+(AhoCorasick AutoMata, 
+Ukkonen's suffixTree, 
+MYT's automata for compiling regex and lexical analysis)
 
 most of the implementions are with low time complexity, 
 
