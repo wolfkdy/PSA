@@ -1,8 +1,9 @@
 #-*- coding: utf-8 -*-
 
-import thompson_automata as nfa
+import os
+import json
 import nfa2dfa
-
+import thompson_automata as nfa
 
 def _simplify(dfa, s_set, e_set):
 	str2id = dict()
@@ -54,6 +55,9 @@ class Regex(object):
 
 	#dump a regex with json fmt
 	def dump(self, path):
+		if not self.compiled:
+			self.compile()
+		#TODO(wolfkdy):implement
 		pass
 
 	def compile(self):
