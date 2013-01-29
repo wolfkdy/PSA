@@ -1,49 +1,9 @@
 #-*- coding: utf-8 -*-
 
-#class Grammar describes a grammar which begins with @start@ 
+from tokens import token_factory as fact
+from express import Express
 
-class Token(object):
-	def __init__(self, text, is_terminal):
-		self.is_terminal = is_terminal
-		self.text = text
-
-	def __repr__(self):
-		return self.text
-
-class TokenFactory(object):
-	def __init__(self):
-		self.terminal_tokens = dict()
-		self.unterminal_tokens = dict()
-		
-	def create_terminal_token(self, text):
-		if text not in self.terminal_tokens:
-			self.terminal_tokens[text] = Token(text, True)
-		return self.terminal_tokens[text]
-		
-	def create_unterminal_token(self, text):
-		if text not in self.unterminal_tokens:
-			self.unterminal_tokens[text] = Token(text, False)
-		return self.unterminal_tokens[text]
-
-g_token_factory = None
-def token_factory():
-	global g_token_factory
-	if g_token_factory is None:
-		g_token_factory = TokenFactory()
-	return g_token_factory
-
-class Express(object):
-	def __init__(self, left_token, right_tokens_list):
-		self.left_token = left_token
-		self.right_tokens_list = right_tokens_list
-
-	def __repr__(self):
-		str_lst = []
-		for tokens in self.right_tokens_list:
-			str_lst.append(''.join([repr(token) for token in tokens]))
-		
-		return '%s->%s' % (repr(self.left_token), '|'.join(str_lst), )
-
+#better to put trie_node and trie otherwhere
 class TrieNode(object):
 	def __init__(self):
 		self.next = {}
@@ -73,6 +33,7 @@ class Trie(object):
 				return
 			p = p.next[ch]
 	
+#class Grammar describes a grammar which begins with @start@ 
 class Grammar(object):
 	def __init__(self, start, others):
 		self.is_augmented = False
@@ -84,9 +45,9 @@ class Grammar(object):
 		others = [itm.replace(' ', '') for itm in others]
 		for itm in others:
 			left, right = itm.split('->')
-			self.ut_tokens.add(token_factory().create_unterminal_token(left))
+			self.ut_tokens.add(fact.create_unterminal(left))
 		left, right = start.split('->')
-		self.start_token = token_factory().create_unterminal_token(left)
+		self.start_token = fact.create_unterminal(left)
 		self.ut_tokens.add(self.start_token)
 
 		others.append(start)
@@ -101,25 +62,40 @@ class Grammar(object):
 				while i < len(right_text):
 					s = trie.leftmost_match(right_text[i:])
 					if s is None:
-						tokens.append(token_factory().create_terminal_token(right_text[i]))
+						tokens.append(fact.create_terminal(right_text[i]))
 						i += 1
 					else :
-						tokens.append(token_factory().create_unterminal_token(s))
+						tokens.append(fact.create_unterminal(s))
 						i += len(s)
 				tokens_list.append(tokens)
-			self.expresses.append(Express(token_factory().create_unterminal_token(_), 				tokens_list))
+			self.expresses.append(Express(fact.create_unterminal(_),tokens_list))
 
 	def __repr__(self):
 		lst = [repr(itm) for itm in self.expresses ]
 		return '\n'.join(lst)
 
+	def get_expresses_by_left(self, left):
+		lst = []
+		for exp in self.expresses:
+			if exp.left_token == left:
+				lst.append(exp)
+		return lst
+
 	def augment(self):
 		if self.is_augmented:
 			return
 		tmp = self.start_token
-		self.start_token = token_factory().create_unterminal_token(self.start_token.text + "'")	
+		self.start_token = fact.create_unterminal(self.start_token.text + "'")	
 		self.expresses.append(Express(self.start_token, [[tmp]]))
 		self.is_augmented = True
+
+	# expand all expresses concated with '|'
+	def expand(self):
+		old_lst = self.expresses
+		new_lst = []
+		for itm in old_lst:
+			new_lst.extend(itm.get_expand_form())
+		self.expresses = new_lst
 
 if __name__ == '__main__':
 	gram_dict = {
@@ -128,4 +104,5 @@ if __name__ == '__main__':
 	}
 	gram = Grammar(gram_dict['start'], gram_dict['other'])	
 	gram.augment()
+	gram.expand()
 	print repr(gram)
