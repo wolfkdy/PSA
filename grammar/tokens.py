@@ -19,15 +19,16 @@ class Unterminal(Token):
 	def __init__(self, text):
 		super(Unterminal, self).__init__(text)
 
-class Dot(Token):
+# ε can not be used as terminal token at current
+class Epsilon(Token):
 	def __init__(self):
-		super(Dot, self).__init__('.')
+		super(Eps, self).__init__('ε')
 
 class TokenFactory(object):
 	def __init__(self):
 		self.terminal_tokens = dict()
 		self.unterminal_tokens = dict()
-		self.shared_dot = Dot()		
+		self.shared_epsilon = Epsilon()
 
 	def create_terminal(self, text):
 		if text not in self.terminal_tokens:
@@ -39,8 +40,8 @@ class TokenFactory(object):
 			self.unterminal_tokens[text] = Unterminal(text)
 		return self.unterminal_tokens[text]
 
-	def create_dot(self):
-		return self.shared_dot
+	def create_epsilon(self):
+		return self.shared_epsilon
 
 token_factory = None
 def token_factory_init():
@@ -53,8 +54,8 @@ def is_terminal(obj):
 def is_unterminal(obj):
 	return isinstance(obj, Unterminal)
 
-def is_dot(obj):
-	return isinstance(obj, Dot)
+def is_epsilon(obj):
+	return isinstance(obj, Epsilon)
 
 def is_token(obj):
 	return isinstance(obj, Token)

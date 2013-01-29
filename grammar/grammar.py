@@ -3,6 +3,15 @@
 from tokens import token_factory as fact
 from express import Express
 
+
+#get token list's first set in grammar g
+def get_first_set_multi(g, token_lst):
+	pass
+
+#get token t's first set in grammar g
+def get_first_set(g, t):
+	pass
+
 #better to put trie_node and trie otherwhere
 class TrieNode(object):
 	def __init__(self):
@@ -37,7 +46,6 @@ class Trie(object):
 class Grammar(object):
 	def __init__(self, start, others):
 		self.is_augmented = False
-
 		#undeterminal tokens
 		self.ut_tokens = set()
 		self.expresses = list()
@@ -52,9 +60,17 @@ class Grammar(object):
 
 		others.append(start)
 		trie = Trie([ut_token.text for ut_token in self.ut_tokens])
+
+		#merge express whch uses the same left part
+		left_right_dict = {}
 		for itm in others:
-			_, right = itm.split('->')
+			left, right = itm.split('->')
 			right_text_list = right.split('|')
+			if left not in left_right_dict:
+				left_right_dict[left] = []
+			left_right_dict[left].extend(right_text_list)
+
+		for left, right_text_list in left_right_dict.iteritems():
 			tokens_list = []
 			for right_text in right_text_list:
 				i =  0
@@ -70,6 +86,24 @@ class Grammar(object):
 				tokens_list.append(tokens)
 			self.expresses.append(Express(fact.create_unterminal(_),tokens_list))
 
+	def _eliminate_left_recursive(self):
+		old_ut_tokens = list(self.ut_tokens)
+		new_ut_tokens = list()
+
+		#new exps generated when eliminating the  immiate left recursive
+		new_exps = []
+		for i in xrange(len(old_ut_tokens)):
+			exp_i = self.get_expresses_by_left(old_ut_tokens[i])
+			for j in xrange(i - 1):
+				exp_j = self.get_expresses_by_left(old_ut_tokens[j])
+				#_eliminate_left_recursive is called before _expand,
+				# so, use an assert to make sure logic is correct
+				# notice, exps with same left part is merged in __init__
+				assert len(exp_j) == 1
+				exp_i.replace_leftmost_token(exp_j[0])
+			if exp_i.is_left_recursive():
+				new_exps.append(exp_i.eliminate_left_recursive())
+
 	def __repr__(self):
 		lst = [repr(itm) for itm in self.expresses ]
 		return '\n'.join(lst)
@@ -81,7 +115,7 @@ class Grammar(object):
 				lst.append(exp)
 		return lst
 
-	def augment(self):
+	def _augment(self):
 		if self.is_augmented:
 			return
 		tmp = self.start_token
@@ -90,12 +124,19 @@ class Grammar(object):
 		self.is_augmented = True
 
 	# expand all expresses concated with '|'
-	def expand(self):
+	def _expand(self):
 		old_lst = self.expresses
 		new_lst = []
 		for itm in old_lst:
 			new_lst.extend(itm.get_expand_form())
 		self.expresses = new_lst
+
+	#prepare self for constructin lr(1)
+	def normalize(self):
+		self._augment()
+		self._eliminate_left_recursive()
+		self._expand()
+
 
 if __name__ == '__main__':
 	gram_dict = {
@@ -103,6 +144,5 @@ if __name__ == '__main__':
 		'other' : ['C->cC|d']
 	}
 	gram = Grammar(gram_dict['start'], gram_dict['other'])	
-	gram.augment()
-	gram.expand()
+	gram.normalize()
 	print repr(gram)
