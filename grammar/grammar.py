@@ -1,16 +1,27 @@
 #-*- coding: utf-8 -*-
 
+import tokens
 from tokens import token_factory as fact
 from express import Express
 
 
-#get token list's first set in grammar g
-def get_first_set_multi(g, token_lst):
-	pass
-
 #get token t's first set in grammar g
 def get_first_set(g, t):
-	pass
+	ret = set()
+	if tokens.is_terminal(t) or tokens.is_epsilon(t):
+		ret.add(t)
+		return ret
+	eps_token = fact.create_epsilon()
+	exps = g.get_expresses_by_left(t)
+	for exp in exps:
+		for tokens in exp.right_tokens_list:
+			for token in tokens:
+				token_set = get_first_set(g, token)
+				ret = ret.union(token_set)
+				if eps_token not in token_set:
+					break
+	return ret
+
 
 #better to put trie_node and trie otherwhere
 class TrieNode(object):

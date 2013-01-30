@@ -2,6 +2,43 @@
 
 from tokens import token_factory as fact
 
+express_factory = None
+
+class ExpressFactory(object):
+	def __init__(self):
+		#lr1 express is shared, while simple express is not
+		self.lr1_expresses = dict()
+
+	def create_lr1(self, left_token, right_tokens, dot_pos, acc_tokens):
+		exp = LR1_Express(left_token, right_tokens, dot_pos, acc_tokens)
+		key = repr(exp)
+		if self.lr1_expresses.get(key) is None:
+			self.lr1_expresses[key] = exp
+		return self.lr1_expresses[key]
+
+	def create_simple(self, left_token, right_tokens_list):
+		return Express(left_token, right_tokens_list)	
+
+def express_factory_init():
+	global express_factory
+	express_factory = ExpressFactory()
+
+#every lr1_express is an expanded express
+class LR1_Express(Express):
+	def __init__(self, left_token, right_tokens, dot_pos, acc_tokens):
+		super(LR1_Express, self).__init__(left_token, [right_tokens])
+		self.dot_pos = dot_pos
+		self.receive_tokens = set()
+		for token in receive_tokens:
+			self.receive_tokens.add(token)
+	
+	def __repr__(self):
+		s = ''
+		s += repr(self.left_token) + '->'
+		for i in xrange(self.dot_pos):
+			s += repr(self.right_tokens_list[0][i])
+		s += ''
+
 class Express(object):
 	def __init__(self, left_token, right_tokens_list):
 		self.left_token = left_token
