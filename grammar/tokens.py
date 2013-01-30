@@ -22,7 +22,7 @@ class Unterminal(Token):
 # ε can not be used as terminal token at current
 class Epsilon(Token):
 	def __init__(self):
-		super(Eps, self).__init__('ε')
+		super(Epsilon, self).__init__('ε')
 
 class TokenFactory(object):
 	def __init__(self):

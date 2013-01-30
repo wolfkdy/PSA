@@ -38,13 +38,12 @@ class Express(object):
 			assert len(healthy_tokens_list) > 0, 'eliminate left recursive failed'
 		else :
 			return
-
 		owned_tokens_list = []
-		for tokens in healthy_tokens_list:
-			owned_tokens_list.append(tokens + tokens[0 : 1])
-		self.tokens_list = owned_tokens_list
-
 		new_left_token = fact.create_unterminal(self.left_token.text + "'")		
+		for tokens in healthy_tokens_list:
+			owned_tokens_list.append(tokens + [new_left_token])
+		self.right_tokens_list = owned_tokens_list
+
 		new_tokens_list = []
 		for tokens in ill_tokens_list:
 			new_tokens_list.append(tokens[1 : ] + [new_left_token])

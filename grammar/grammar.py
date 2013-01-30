@@ -84,7 +84,7 @@ class Grammar(object):
 						tokens.append(fact.create_unterminal(s))
 						i += len(s)
 				tokens_list.append(tokens)
-			self.expresses.append(Express(fact.create_unterminal(_),tokens_list))
+			self.expresses.append(Express(fact.create_unterminal(left), tokens_list))
 
 	def _eliminate_left_recursive(self):
 		old_ut_tokens = list(self.ut_tokens)
@@ -94,6 +94,8 @@ class Grammar(object):
 		new_exps = []
 		for i in xrange(len(old_ut_tokens)):
 			exp_i = self.get_expresses_by_left(old_ut_tokens[i])
+			assert len(exp_i) == 1
+			exp_i = exp_i[0]
 			for j in xrange(i - 1):
 				exp_j = self.get_expresses_by_left(old_ut_tokens[j])
 				#_eliminate_left_recursive is called before _expand,
@@ -103,6 +105,9 @@ class Grammar(object):
 				exp_i.replace_leftmost_token(exp_j[0])
 			if exp_i.is_left_recursive():
 				new_exps.append(exp_i.eliminate_left_recursive())
+		for new_exp in new_exps:
+			self.ut_tokens.add(new_exp.left_token)
+			self.expresses.append(new_exp)
 
 	def __repr__(self):
 		lst = [repr(itm) for itm in self.expresses ]
@@ -119,7 +124,8 @@ class Grammar(object):
 		if self.is_augmented:
 			return
 		tmp = self.start_token
-		self.start_token = fact.create_unterminal(self.start_token.text + "'")	
+		#create a different token for new start state
+		self.start_token = fact.create_unterminal(self.start_token.text + "__S")	
 		self.expresses.append(Express(self.start_token, [[tmp]]))
 		self.is_augmented = True
 
@@ -135,13 +141,21 @@ class Grammar(object):
 	def normalize(self):
 		self._augment()
 		self._eliminate_left_recursive()
-		self._expand()
+#		self._expand()
 
 
 if __name__ == '__main__':
 	gram_dict = {
 		'start' : 'S->CC',
-		'other' : ['C->cC|d']
+		'other' : ['C->cC|d|Cc']
+	}
+	gram_dict = {
+		'start' : 'A->Aa|b',
+		'other' : [],
+	}
+	gram_dict = {
+		'start' : 'A->Aa1|Aa2|Aa3|Aa4|Aa5|b1|b2|b3|b4|b5',
+		'other' : [],
 	}
 	gram = Grammar(gram_dict['start'], gram_dict['other'])	
 	gram.normalize()
