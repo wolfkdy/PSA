@@ -23,21 +23,40 @@ def express_factory_init():
 	global express_factory
 	express_factory = ExpressFactory()
 
+express_factory_init()
+
 #every lr1_express is an expanded express
 class LR1_Express(Express):
 	def __init__(self, left_token, right_tokens, dot_pos, acc_tokens):
 		super(LR1_Express, self).__init__(left_token, [right_tokens])
 		self.dot_pos = dot_pos
-		self.receive_tokens = set()
-		for token in receive_tokens:
-			self.receive_tokens.add(token)
-	
+		self.acc_tokens = set()
+		for token in acc_tokens:
+			self.acc_tokens.add(token)
+
+	def get_token_after_dot(self):
+		if self.dot_pos == len(self.right_tokens_list[0]):
+			return fact.create_epsilon()
+		return self.right_tokens_list[0][self.dot_pos]
+
+	def get_token_lookahead_dot(self):
+		if self.dot_pos >= len(self.right_tokens_list[0]) - 1:
+			return fact.create_epsilon()
+		return self.right_Tokens_list[0][self.dot_pos + 1]
+
 	def __repr__(self):
 		s = ''
 		s += repr(self.left_token) + '->'
 		for i in xrange(self.dot_pos):
 			s += repr(self.right_tokens_list[0][i])
-		s += ''
+		s += '·'
+		for i in xrange(self.dot_pos, len(self.right_tokens_list[0])):
+			s += repr(self.right_tokens_list[0][i])
+		s += ','
+		lst = list(self.acc_tokens)
+		lst.sort(lambda x, y : cmp(x.text, y.text))
+		s += '|'.join([itm.text for itm in lst])
+		return s
 
 class Express(object):
 	def __init__(self, left_token, right_tokens_list):
@@ -54,7 +73,7 @@ class Express(object):
 	def get_expand_form(self):
 		lst = []
 		for item in self.right_tokens_list:
-			lst.append(Express(self.left_token, [item]))
+			lst.append(express_factory.create_simple(self.left_token, [item]))
 		return lst
 
 	def is_expanded(self):
@@ -85,7 +104,7 @@ class Express(object):
 		for tokens in ill_tokens_list:
 			new_tokens_list.append(tokens[1 : ] + [new_left_token])
 		new_tokens_list.append([fact.create_epsilon()])			
-		new_exp = Express(new_left_token, new_tokens_list)
+		new_exp = express_factory.create_simple(new_left_token, new_tokens_list)
 		return new_exp
 
 	#replace every exp(Ai->Aj gama) with Ai -> delta1 gama | delta2 gama | delta3 gama ...

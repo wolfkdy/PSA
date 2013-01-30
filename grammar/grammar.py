@@ -2,8 +2,18 @@
 
 import tokens
 from tokens import token_factory as fact
-from express import Express
+from express import express_factory as e_fact
 
+
+def get_first_set_multi(g, tokens):
+	ret = set()
+	eps_token = fact.create_epsilon()
+	for token in tokens:
+		token_set = get_first_set(g, token)
+		ret = ret.union(token_set)
+		if eps_token not in token_set:
+			return ret
+	return ret
 
 #get token t's first set in grammar g
 def get_first_set(g, t):
@@ -15,11 +25,8 @@ def get_first_set(g, t):
 	exps = g.get_expresses_by_left(t)
 	for exp in exps:
 		for tokens in exp.right_tokens_list:
-			for token in tokens:
-				token_set = get_first_set(g, token)
-				ret = ret.union(token_set)
-				if eps_token not in token_set:
-					break
+			tmp = get_first_set_multi(g, tokens)
+			ret = ret.union(tmp)
 	return ret
 
 
@@ -95,7 +102,9 @@ class Grammar(object):
 						tokens.append(fact.create_unterminal(s))
 						i += len(s)
 				tokens_list.append(tokens)
-			self.expresses.append(Express(fact.create_unterminal(left), tokens_list))
+			self.expresses.append( \
+					e_fact.create_simple( \
+						fact.create_unterminal(left), tokens_list))
 
 	def _eliminate_left_recursive(self):
 		old_ut_tokens = list(self.ut_tokens)
@@ -137,7 +146,7 @@ class Grammar(object):
 		tmp = self.start_token
 		#create a different token for new start state
 		self.start_token = fact.create_unterminal(self.start_token.text + "__S")	
-		self.expresses.append(Express(self.start_token, [[tmp]]))
+		self.expresses.append(e_fact.create_simple(self.start_token, [[tmp]]))
 		self.is_augmented = True
 
 	# expand all expresses concated with '|'
