@@ -25,39 +25,6 @@ def express_factory_init():
 
 express_factory_init()
 
-#every lr1_express is an expanded express
-class LR1_Express(Express):
-	def __init__(self, left_token, right_tokens, dot_pos, acc_tokens):
-		super(LR1_Express, self).__init__(left_token, [right_tokens])
-		self.dot_pos = dot_pos
-		self.acc_tokens = set()
-		for token in acc_tokens:
-			self.acc_tokens.add(token)
-
-	def get_token_after_dot(self):
-		if self.dot_pos == len(self.right_tokens_list[0]):
-			return fact.create_epsilon()
-		return self.right_tokens_list[0][self.dot_pos]
-
-	def get_token_lookahead_dot(self):
-		if self.dot_pos >= len(self.right_tokens_list[0]) - 1:
-			return fact.create_epsilon()
-		return self.right_Tokens_list[0][self.dot_pos + 1]
-
-	def __repr__(self):
-		s = ''
-		s += repr(self.left_token) + '->'
-		for i in xrange(self.dot_pos):
-			s += repr(self.right_tokens_list[0][i])
-		s += '·'
-		for i in xrange(self.dot_pos, len(self.right_tokens_list[0])):
-			s += repr(self.right_tokens_list[0][i])
-		s += ','
-		lst = list(self.acc_tokens)
-		lst.sort(lambda x, y : cmp(x.text, y.text))
-		s += '|'.join([itm.text for itm in lst])
-		return s
-
 class Express(object):
 	def __init__(self, left_token, right_tokens_list):
 		self.left_token = left_token
@@ -119,3 +86,40 @@ class Express(object):
 			for replace_tokens in express.right_tokens_list:
 				new_tokens_list.append(replace_tokens + tokens[1 : ])	
 		self.right_tokens_list = new_tokens_list
+
+#every lr1_express is an expanded express
+class LR1_Express(Express):
+	def __init__(self, left_token, right_tokens, dot_pos, acc_tokens):
+		super(LR1_Express, self).__init__(left_token, [right_tokens])
+		self.dot_pos = dot_pos
+		self.acc_tokens = set()
+		for token in acc_tokens:
+			self.acc_tokens.add(token)
+
+	def get_right_tokens(self):
+		return self.right_tokens_list[0]
+
+	def get_token_after_dot(self):
+		if self.dot_pos == len(self.right_tokens_list[0]):
+			return fact.create_epsilon()
+		return self.right_tokens_list[0][self.dot_pos]
+
+	def get_token_lookahead_dot(self):
+		if self.dot_pos >= len(self.right_tokens_list[0]) - 1:
+			return fact.create_epsilon()
+		return self.right_tokens_list[0][self.dot_pos + 1]
+
+	def __repr__(self):
+		s = ''
+		s += repr(self.left_token) + '->'
+		for i in xrange(self.dot_pos):
+			s += repr(self.right_tokens_list[0][i])
+		s += '·'
+		for i in xrange(self.dot_pos, len(self.right_tokens_list[0])):
+			s += repr(self.right_tokens_list[0][i])
+		s += ','
+		lst = list(self.acc_tokens)
+		lst.sort(lambda x, y : cmp(x.text, y.text))
+		s += '|'.join([itm.text for itm in lst])
+		return s
+

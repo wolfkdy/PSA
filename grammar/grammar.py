@@ -12,6 +12,8 @@ def get_first_set_multi(g, tokens):
 		token_set = get_first_set(g, token)
 		ret = ret.union(token_set)
 		if eps_token not in token_set:
+			if eps_token in ret:
+				ret.remove(eps_token)
 			return ret
 	return ret
 
@@ -24,8 +26,8 @@ def get_first_set(g, t):
 	eps_token = fact.create_epsilon()
 	exps = g.get_expresses_by_left(t)
 	for exp in exps:
-		for tokens in exp.right_tokens_list:
-			tmp = get_first_set_multi(g, tokens)
+		for _tokens in exp.right_tokens_list:
+			tmp = get_first_set_multi(g, _tokens)
 			ret = ret.union(tmp)
 	return ret
 
@@ -59,11 +61,12 @@ class Trie(object):
 			if p.next.get(ch, -1) == -1:
 				return
 			p = p.next[ch]
-	
+		return p.represent	
+
 #class Grammar describes a grammar which begins with @start@ 
 class Grammar(object):
 	def __init__(self, start, others):
-		self.is_augmented = False
+		self.is_normalized = False
 		#undeterminal tokens
 		self.ut_tokens = set()
 		self.expresses = list()
@@ -97,6 +100,7 @@ class Grammar(object):
 					s = trie.leftmost_match(right_text[i:])
 					if s is None:
 						tokens.append(fact.create_terminal(right_text[i]))
+						assert right_text[i] != 'C', right_text
 						i += 1
 					else :
 						tokens.append(fact.create_unterminal(s))
@@ -140,14 +144,17 @@ class Grammar(object):
 				lst.append(exp)
 		return lst
 
+	#return the first express of a normalized grammar
+	def get_first_express(self):
+		assert self.is_normalized, 'get first express of a non-normalized grammar is meaningless'
+		exps = self.get_expresses_by_left(self.start_token)
+		return exps[0]
+
 	def _augment(self):
-		if self.is_augmented:
-			return
 		tmp = self.start_token
 		#create a different token for new start state
 		self.start_token = fact.create_unterminal(self.start_token.text + "__S")	
 		self.expresses.append(e_fact.create_simple(self.start_token, [[tmp]]))
-		self.is_augmented = True
 
 	# expand all expresses concated with '|'
 	def _expand(self):
@@ -159,16 +166,19 @@ class Grammar(object):
 
 	#prepare self for constructin lr(1)
 	def normalize(self):
+		if self.is_normalized:
+			return
 		self._augment()
 		self._eliminate_left_recursive()
-#		self._expand()
+		self._expand()
+		self.is_normalized = True
 
-
-if __name__ == '__main__':
+def main():
 	gram_dict = {
 		'start' : 'S->CC',
-		'other' : ['C->cC|d|Cc']
+		'other' : ['C->cC|d']
 	}
+	'''
 	gram_dict = {
 		'start' : 'A->Aa|b',
 		'other' : [],
@@ -177,6 +187,13 @@ if __name__ == '__main__':
 		'start' : 'A->Aa1|Aa2|Aa3|Aa4|Aa5|b1|b2|b3|b4|b5',
 		'other' : [],
 	}
+	'''
 	gram = Grammar(gram_dict['start'], gram_dict['other'])	
 	gram.normalize()
-	print repr(gram)
+#	print get_first_set_multi(gram, [fact.create_unterminal('C'), fact.create_acc()])
+	return
+	for t in gram.ut_tokens:
+		print t, get_first_set(gram, t)
+
+if __name__ == '__main__':
+	main()

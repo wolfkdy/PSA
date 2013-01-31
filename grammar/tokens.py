@@ -19,6 +19,10 @@ class Unterminal(Token):
 	def __init__(self, text):
 		super(Unterminal, self).__init__(text)
 
+class AccToken(Token):
+	def __init__(self):
+		super(AccToken, self).__init__('$')
+
 # ε can not be used as terminal token at current
 class Epsilon(Token):
 	def __init__(self):
@@ -29,6 +33,10 @@ class TokenFactory(object):
 		self.terminal_tokens = dict()
 		self.unterminal_tokens = dict()
 		self.shared_epsilon = Epsilon()
+		self.shared_acc = AccToken()
+
+	def get_all_tokens(self):
+		return self.terminal_tokens.values() + self.unterminal_tokens.values()
 
 	def create_terminal(self, text):
 		if text not in self.terminal_tokens:
@@ -43,16 +51,19 @@ class TokenFactory(object):
 	def create_epsilon(self):
 		return self.shared_epsilon
 
+	def create_acc(self):
+		return self.shared_acc
+
 token_factory = None
 def token_factory_init():
 	global token_factory
 	token_factory = TokenFactory()
 
 def is_terminal(obj):
-	return isinstance(obj, Terminal)
+	return isinstance(obj, (Terminal, AccToken))
 
 def is_unterminal(obj):
-	return isinstance(obj, Unterminal)
+	return isinstance(obj, [AccToken, Unterminal])
 
 def is_epsilon(obj):
 	return isinstance(obj, Epsilon)
