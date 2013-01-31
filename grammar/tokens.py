@@ -65,6 +65,9 @@ def is_terminal(obj):
 def is_unterminal(obj):
 	return isinstance(obj, [AccToken, Unterminal])
 
+def is_acc(obj):
+	return isinstance(obj, AccToken)
+
 def is_epsilon(obj):
 	return isinstance(obj, Epsilon)
 

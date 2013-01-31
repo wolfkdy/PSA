@@ -109,6 +109,9 @@ class LR1_Express(Express):
 			return fact.create_epsilon()
 		return self.right_tokens_list[0][self.dot_pos + 1]
 
+	def is_pending_reduce(self):
+		return self.dot_pos == len(self.right_tokens_list[0])
+
 	def __repr__(self):
 		s = ''
 		s += repr(self.left_token) + '->'
