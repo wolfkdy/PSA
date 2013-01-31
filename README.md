@@ -7,7 +7,9 @@ some experimental implemention of string automations write in python
 
 (AhoCorasick AutoMata, 
 Ukkonen's suffixTree, 
-MYT's automata for compiling regex and lexical analysis)
+MYT's automata for compiling regex and lexical analysis
+LR1 and LALR(1) syntax parse table
+)
 
 most of the implementions are with low time complexity, 
 
