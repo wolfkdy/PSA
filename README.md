@@ -3,7 +3,7 @@ PSA
 
 Python String Automata
 
-some experimental implemention of string automations write in python
+some experimental implemention of string automations written in python
 
 (AhoCorasick AutoMata, 
 Ukkonen's suffixTree, 
