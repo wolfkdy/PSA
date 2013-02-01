@@ -52,9 +52,9 @@ class Express(object):
 				return True
 		return False	
 
-	def get_non_left_recursive_form(self):
+	def eliminate_left_recursive(self):
 		if not self.is_left_recursive():
-			return (self, )
+			return (self, None)
 		ill_tokens_list = [itms for itms in self.right_tokens_list \
 				if itms[0] == self.left_token]
 		healthy_tokens_list = [itms for itms in self.right_tokens_list \

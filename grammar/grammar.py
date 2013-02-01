@@ -114,21 +114,31 @@ class Grammar(object):
 		old_ut_tokens = list(self.ut_tokens)
 		new_ut_tokens = list()
 
+		def get_idx_by_left(left):
+			for i in xrange(len(self.expresses)):
+				if self.expresses[i].left_token == left:
+					return i
+			return -1
 		#new exps generated when eliminating the  immiate left recursive
 		new_exps = []
 		for i in xrange(len(old_ut_tokens)):
-			exp_i = self.get_expresses_by_left(old_ut_tokens[i])
-			assert len(exp_i) == 1
-			exp_i = exp_i[0]
+			i_exp_idx = get_idx_by_left(old_ut_tokens[i])
+			assert (i_exp_idx != -1)
 			for j in xrange(i - 1):
-				exp_j = self.get_expresses_by_left(old_ut_tokens[j])
+				exp_i = self.expresses[i_exp_idx]
+				j_exp_idx = get_idx_by_left(old_ut_tokens[j])
+				assert (j_exp_idx != -1)
+				exp_j = self.expresses[j_exp_idx]
 				#_eliminate_left_recursive is called before _expand,
 				# so, use an assert to make sure logic is correct
 				# notice, exps with same left part is merged in __init__
-				assert len(exp_j) == 1
-				exp_i.replace_leftmost_token(exp_j[0])
-			if exp_i.is_left_recursive():
-				new_exps.append(exp_i.eliminate_left_recursive())
+				new_exp_i = exp_i.replace_leftmost_token(exp_j)
+				self.expresses[i_exp_idx] = new_exp_i
+			if self.expresses[i_exp_idx].is_left_recursive():
+				i_exp_cpy, new_exp = \
+					self.expresses[i_exp_idx].eliminate_left_recursive()
+				self.expresses[i_exp_idx] = i_exp_cpy
+				new_exps.append(new_exp)
 		for new_exp in new_exps:
 			self.ut_tokens.add(new_exp.left_token)
 			self.expresses.append(new_exp)
@@ -178,11 +188,11 @@ def main():
 		'start' : 'S->CC',
 		'other' : ['C->cC|d']
 	}
-	'''
 	gram_dict = {
 		'start' : 'A->Aa|b',
 		'other' : [],
 	}
+	'''
 	gram_dict = {
 		'start' : 'A->Aa1|Aa2|Aa3|Aa4|Aa5|b1|b2|b3|b4|b5',
 		'other' : [],
@@ -190,6 +200,7 @@ def main():
 	'''
 	gram = Grammar(gram_dict['start'], gram_dict['other'])	
 	gram.normalize()
+	print gram
 #	print get_first_set_multi(gram, [fact.create_unterminal('C'), fact.create_acc()])
 	return
 	for t in gram.ut_tokens:
