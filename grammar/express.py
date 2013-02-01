@@ -126,3 +126,17 @@ class LR1_Express(Express):
 		s += '|'.join([itm.text for itm in lst])
 		return s
 
+
+def is_same_core(exp_a, exp_b):
+	if exp_a.dot_pos != exp_b.dot_pos:
+		return False
+	a_right = exp_a.get_right_tokens()
+	b_right = exp_b.get_right_tokens()
+	if len(a_right) != len(b_right):
+		return False
+	for i in xrange(len(a_right)):
+		if a_right[i] != b_right[i]:
+			return False
+	return True
+
+

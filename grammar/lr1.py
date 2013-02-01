@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 
 import grammar
+import tokens
 from tokens import token_factory as fact
 from express import express_factory
 
@@ -14,14 +15,18 @@ class Lr1ItemSet(object):
 		self.item_set = item_set
 		self.__id = None
 
-	def set_id(id):
+	def set_id(self, id):
 		self.__id = id
+
+	def get_sorted_items(self):
+		lst = list(self.item_set)
+		lst.sort()
+		return lst
 
 	def __repr__(self):
 		lst = [repr(itm) for itm in self.item_set]
 		lst.sort()
-		s = ' '.join(lst)
-		return s + '\n'
+		return ' '.join(lst)
 
 itemset_factory = None
 class Lr1ItemSetFactory(object):
@@ -91,7 +96,7 @@ def get_lr1_relation(g):
 	c = closure(g, itemset_factory.create_lr1_itemset(set([lr1_exp])))
 	q = [c]
 	visited = set([c])
-	GOTO = dict()
+	goto_dict = dict()
 	all_tokens = fact.get_all_tokens()
 	while len(q) > 0:
 		tmp = q[0]
@@ -101,49 +106,60 @@ def get_lr1_relation(g):
 			if len(reached.item_set) > 0 and reached not in visited:
 				visited.add(reached)
 				q.append(reached)
-			if tmp not in GOTO:
-				GOTO[tmp] = dict()
-			GOTO[tmp][token] = reached
-	return visited, GOTO
+			if len(reached.item_set) == 0:
+				continue
+			if tmp not in goto_dict:
+				goto_dict[tmp] = dict()
+			goto_dict[tmp][token] = reached
+	return visited, goto_dict
 
-def get_parse_table(g, item_sets, raw_GOTO):
-	ACTION = {}
-	GOTO = {}
+def get_parse_table(g, item_sets, raw_goto_dict):
+	action_dict = {}
+	goto_dict = {}
 	for itmset in item_sets:
 		for exp in itmset.item_set:
 			token = exp.get_token_after_dot()
 			if not tokens.is_terminal(token):
 				continue
-			to_state = raw_GOTO.get(itmset, {}).get(token)
+			to_state = raw_goto_dict.get(itmset, {}).get(token)
 			if to_state is None:
 				continue
-			if itmset not in ACTION:
-				ACTION[itmset] = {}
-			if token not in ACTION[itmset]:
-				ACTION[itmset][token] = set()
-			ACTION[itmset][token].add((ACTION_SHIFT, to_state))
+			if itmset not in action_dict:
+				action_dict[itmset] = {}
+			if token not in action_dict[itmset]:
+				action_dict[itmset][token] = set()
+			action_dict[itmset][token].add((ACTION_SHIFT, to_state))
 
 	for itmset in item_sets:
 		for exp in itmset.item_set:
 			if exp.is_pending_reduce():
 				left = exp.left_token
 				if left != g.start_token:
-					if itmset not in ACTION:
-						ACTION[itmset] = {}
-					#TODO(kdy): grammar is expanded before building lr1 item set, and acc tokens are not merged when building closure, so the for loop gets only one token, may be a bad design ?
+					if itmset not in action_dict:
+						action_dict[itmset] = {}
+					#TODO(kdy): grammar is expanded before building lr1 item set, 
+					#and acc tokens are not merged when building closure, 
+					#so the for loop gets only one token, may be a bad design ?
 					for acc in exp.acc_tokens:
-						if acc not in ACTION[itmset]:
-							ACTION[itmset][acc] = set()
-						ACTION[itmset][acc].add((ACTION_REDUCE, exp))	
+						if acc not in action_dict[itmset]:
+							action_dict[itmset][acc] = set()
+						action_dict[itmset][acc].add((ACTION_REDUCE, exp))	
 				else :
-					if itmset not in ACTION:
-						ACTION[itmset] = {}
+					if itmset not in action_dict:
+						action_dict[itmset] = {}
 					lst = list(exp.acc_tokens)
 					assert (len(lst) == 1 and tokens.is_acc(lst[0]))
-					if lst[0] not in ACTION[itmset]:
-						ACTION[itmset][lst[0]] = set()
-					ACTION[itmset][lst[0]].add((ACTION_ACC, ))
-	return ACTION
+					if lst[0] not in action_dict[itmset]:
+						action_dict[itmset][lst[0]] = set()
+					action_dict[itmset][lst[0]].add((ACTION_ACC, ))
+	for from_set, edges in raw_goto_dict.iteritems():
+		for token, to_set in edges.iteritems():
+			if tokens.is_terminal(token):
+				continue
+			if from_set not in goto_dict:
+				goto_dict[from_set] = dict()
+			goto_dict[from_set][token] = to_set
+	return action_dict, goto_dict
 
 '''
 # S -> A dot Bc, a/b
@@ -159,10 +175,19 @@ def main():
 	}
 	gram = grammar.Grammar(gram_dict['start'], gram_dict['other'])
 	gram.normalize()
-	all_items, raw_goto = get_lr1_items(gram)
-	GOTO, ACTION = get_parse_table(gram, all_items, raw_goto)	
-	for itm in get_lr1_items(gram):
-		print itm
-	
+	all_items, raw_goto = get_lr1_relation(gram)
+	action_dict, goto_dict = get_parse_table(gram, all_items, raw_goto)	
+	print 'action_dict'
+	for from_set, edges in action_dict.iteritems():
+		for token, to_set in edges.iteritems():
+			print from_set, token, to_set
+	print 'goto_dict'
+	for from_set, edges in goto_dict.iteritems():
+		for token, to_set in edges.iteritems():
+			print from_set, '-------', token, '-----', to_set
+	return
+	for itm in get_lr1_relation(gram):
+		print itm	
+
 if __name__ == '__main__':
 	main()
