@@ -5,9 +5,10 @@ import lr1
 from lr1 import itemset_factory
 from express import express_factory
 
+#receive two lr1 item_sets and judge if same core
 def is_same_core(itm_a, itm_b):
-	itm_lst_a = itm_a.get_sorted_items()
-	itm_lst_b = itm_b.get_sorted_items()
+	itm_lst_a = itm_a.to_acc_merged_form().get_sorted_items()
+	itm_lst_b = itm_b.to_acc_merged_form().get_sorted_items()
 	if len(itm_lst_a) != len(itm_lst_b):
 		return False
 	for i in xrange(len(itm_lst_a)):
@@ -15,25 +16,22 @@ def is_same_core(itm_a, itm_b):
 			return False
 	return True
 
+
 def merge(item_list):
 	#TODO: debug mode assert item_list are same_core ?		
-	item = item_list[0]
-	sample = set()
-	for exp in item.item_set:
-		tmp = express_factory.create_lr1(exp.left_token, exp.get_right_tokens(), \
-				exp.dot_pos, exp.acc_tokens)
-		sample.add(tmp)
-	new_itmset = itemset_factory.create_lr1_itemset(sample)	
-	new_itmset_list = new_itmset.get_sorted_items()
-	for i in xrange(len(new_itmset_list)):
-		acc_tokens = new_itmset_list[i].acc_tokens
-		for _item in item_list:
-			acc_tokens = acc_tokens.union(_item.get_sorted_items()[i].acc_tokens)
-		new_itmset_list[i].acc_tokens = acc_tokens
-	print item_list
-	print new_itmset
-	print 'debug'
-	return new_itmset
+	item_list_sample = item_list[0].to_acc_merged_form().get_sorted_items()
+	item_list_merged = [item.to_acc_merged_form().get_sorted_items() for item in item_list]
+	new_item_set = set()
+	for i in xrange(len(item_list_sample)):
+		acc_tokens_set = set()
+		for j in xrange(len(item_list_merged)):
+			acc_tokens_set = acc_tokens_set.union(item_list_merged[j][i].acc_tokens)
+		new_item_set.add(express_factory.create_lr1(item_list_sample[i].left_token, \
+			item_list_sample[i].get_right_tokens(), \
+			item_list_sample[i].dot_pos, \
+			acc_tokens_set))
+	ret = itemset_factory.create_lr1_itemset(new_item_set)
+	return ret
 
 def merge_lr1(all_items, action_tbl, goto_tbl):
 	itm2newitm = dict()	
@@ -48,6 +46,12 @@ def merge_lr1(all_items, action_tbl, goto_tbl):
 			continue
 		lst = [all_item_list[i]]
 		for j in xrange(i + 1, len(all_item_list)):
+			'''
+			print all_item_list[i]
+			print all_item_list[j]
+			print is_same_core(all_item_list[i], \
+				all_item_list[j])
+			'''
 			if is_same_core(all_item_list[j], all_item_list[i]):
 				lst.append(all_item_list[j])
 		merged_item = merge(lst)
@@ -92,6 +96,10 @@ def main():
 	gram_dict = {
 		'start' : 'S->CC',
 		'other' : ['C->cC|d']
+	}
+	gram_dict = {
+		'start' : 'E->E+T',
+		'other' : ['E->T', 'T->T*F', 'T->F', 'F->(E)', 'F->id'],
 	}
 	gram = grammar.Grammar(gram_dict['start'], gram_dict['other'])
 	gram.normalize()

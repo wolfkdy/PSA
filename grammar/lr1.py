@@ -2,6 +2,7 @@
 
 import grammar
 import tokens
+import express
 from tokens import token_factory as fact
 from express import express_factory
 
@@ -18,10 +19,31 @@ class Lr1ItemSet(object):
 	def set_id(self, id):
 		self.__id = id
 
+	#get item list sorted by item's core
 	def get_sorted_items(self):
 		lst = list(self.item_set)
-		lst.sort()
+		lst.sort(lambda x, y : cmp(x.get_core_repr(), y.get_core_repr()))
 		return lst
+
+	def to_acc_merged_form(self):
+	 	exp_list = list(self.item_set)
+		new_exps = set()
+		visited = set()
+		for i in xrange(len(exp_list)):
+			if exp_list[i] in visited:
+				continue
+			lst = [exp_list[i]]
+			acc_tokens = set(exp_list[i].acc_tokens)
+			visited.add(exp_list[i])
+			for j in xrange(i + 1, len(exp_list)):
+				if express.is_same_core(exp_list[i], exp_list[j]):
+					lst.append(exp_list[j])
+					acc_tokens = acc_tokens.union(exp_list[j].acc_tokens)
+					visited.add(exp_list[j])
+			new_exps.add(express_factory.create_lr1(exp_list[i].left_token, \
+					exp_list[i].get_right_tokens(), \
+					exp_list[i].dot_pos, acc_tokens))	
+		return itemset_factory.create_lr1_itemset(new_exps)
 
 	def __repr__(self):
 		lst = [repr(itm) for itm in self.item_set]
