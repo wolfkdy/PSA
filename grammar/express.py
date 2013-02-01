@@ -112,7 +112,7 @@ class LR1_Express(Express):
 	def is_pending_reduce(self):
 		return self.dot_pos == len(self.right_tokens_list[0])
 
-	def __repr__(self):
+	def get_core_repr(self):
 		s = ''
 		s += repr(self.left_token) + '->'
 		for i in xrange(self.dot_pos):
@@ -120,7 +120,10 @@ class LR1_Express(Express):
 		s += '·'
 		for i in xrange(self.dot_pos, len(self.right_tokens_list[0])):
 			s += repr(self.right_tokens_list[0][i])
-		s += ','
+		return s
+
+	def __repr__(self):
+		s = self.get_core_repr() + ','
 		lst = list(self.acc_tokens)
 		lst.sort(lambda x, y : cmp(x.text, y.text))
 		s += '|'.join([itm.text for itm in lst])
