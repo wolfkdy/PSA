@@ -53,12 +53,15 @@ class Regex(object):
 				return False, i - 1
 		return False, i	
 
+	def minimize(self):
+		assert False, 'not implemented'
+
 	#dump a regex with json fmt
 	def dump(self, path):
 		if not self.compiled:
 			self.compile()
-		#TODO(wolfkdy):implement
-		pass
+		fd = open(path, 'w')
+		json.dump(self.dfa, fd, indent = 8)
 
 	def compile(self):
 		am = nfa.Thompson_AutoMata()

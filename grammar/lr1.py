@@ -19,6 +19,9 @@ class Lr1ItemSet(object):
 	def set_id(self, id):
 		self.__id = id
 
+	def get_id(self):
+		return self.__id
+
 	#get item list sorted by item's core
 	def get_sorted_items(self):
 		lst = list(self.item_set)

@@ -1,0 +1,113 @@
+{
+        "TABLE_TYPE": "LALR1", 
+        "goto_tbl": {
+                "19": {
+                        "C": 21
+                }, 
+                "15": {
+                        "S": 8, 
+                        "C": 7
+                }, 
+                "7": {
+                        "C": 13
+                }
+        }, 
+        "action_tbl": {
+                "7": {
+                        "c": [
+                                [
+                                        "ACTION_SHIFT", 
+                                        19
+                                ]
+                        ], 
+                        "d": [
+                                [
+                                        "ACTION_SHIFT", 
+                                        20
+                                ]
+                        ]
+                }, 
+                "8": {
+                        "$": [
+                                "ACTION_ACC"
+                        ]
+                }, 
+                "13": {
+                        "$": [
+                                [
+                                        "ACTION_REDUCE", 
+                                        "S->CC"
+                                ]
+                        ]
+                }, 
+                "15": {
+                        "c": [
+                                [
+                                        "ACTION_SHIFT", 
+                                        19
+                                ]
+                        ], 
+                        "d": [
+                                [
+                                        "ACTION_SHIFT", 
+                                        20
+                                ]
+                        ]
+                }, 
+                "19": {
+                        "c": [
+                                [
+                                        "ACTION_SHIFT", 
+                                        19
+                                ]
+                        ], 
+                        "d": [
+                                [
+                                        "ACTION_SHIFT", 
+                                        20
+                                ]
+                        ]
+                }, 
+                "20": {
+                        "c": [
+                                [
+                                        "ACTION_REDUCE", 
+                                        "C->d"
+                                ]
+                        ], 
+                        "d": [
+                                [
+                                        "ACTION_REDUCE", 
+                                        "C->d"
+                                ]
+                        ], 
+                        "$": [
+                                [
+                                        "ACTION_REDUCE", 
+                                        "C->d"
+                                ]
+                        ]
+                }, 
+                "21": {
+                        "c": [
+                                [
+                                        "ACTION_REDUCE", 
+                                        "C->cC"
+                                ]
+                        ], 
+                        "d": [
+                                [
+                                        "ACTION_REDUCE", 
+                                        "C->cC"
+                                ]
+                        ], 
+                        "$": [
+                                [
+                                        "ACTION_REDUCE", 
+                                        "C->cC"
+                                ]
+                        ]
+                }
+        }, 
+        "start": 15
+}

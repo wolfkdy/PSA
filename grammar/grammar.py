@@ -31,37 +31,31 @@ def get_first_set(g, t):
 			ret = ret.union(tmp)
 	return ret
 
-
-#better to put trie_node and trie otherwhere
-class TrieNode(object):
-	def __init__(self):
-		self.next = {}
-		self.represent = None
-
-class Trie(object):
-	def __init__(self, sample_list):
-		self.root = TrieNode()
-		for sample in sample_list:
-			self._insert_sample(sample)
-
-	def _insert_sample(self, text):
-		p = self.root
-		for ch in text:
-			if p.next.get(ch, -1) == -1:
-				p.next[ch] = TrieNode()
-			p = p.next[ch]
-		p.represent = text
-
-	# return the prefix of text which matches trie at the first time
-	def leftmost_match(self, text):
-		p = self.root
-		for ch in text:
-			if p.represent != None:
-				return p.represent
-			if p.next.get(ch, -1) == -1:
-				return
-			p = p.next[ch]
-		return p.represent	
+#leftmost match rule
+#TODO(kdy): use aho-corasick automata to speedup this process
+def split_text_by_ut_tokens(text, ut_set):
+	i = 0
+	tokens = []
+	while i < len(text):
+		left_most = len(text)
+		ut_token = None
+		for itm in ut_set:
+			idx = text[i : ].find(itm.text)
+			if idx == -1:
+				continue
+			idx += i
+			if idx >= left_most:
+				continue
+			left_most = idx
+			ut_token = itm
+		if i != left_most:
+			tokens.append(fact.create_terminal(text[i : left_most]))
+		if ut_token != None:
+			tokens.append(ut_token)
+			i = left_most + len(ut_token.text)
+		else :
+			i = len(text)
+	return tokens	
 
 #class Grammar describes a grammar which begins with @start@ 
 class Grammar(object):
@@ -80,7 +74,6 @@ class Grammar(object):
 		self.ut_tokens.add(self.start_token)
 
 		others.append(start)
-		trie = Trie([ut_token.text for ut_token in self.ut_tokens])
 
 		#merge express whch uses the same left part
 		left_right_dict = {}
@@ -95,6 +88,8 @@ class Grammar(object):
 			tokens_list = []
 			for right_text in right_text_list:
 				i =  0
+				tokens = split_text_by_ut_tokens(right_text, self.ut_tokens)
+				'''
 				tokens = []
 				while i < len(right_text):
 					s = trie.leftmost_match(right_text[i:])
@@ -105,6 +100,7 @@ class Grammar(object):
 					else :
 						tokens.append(fact.create_unterminal(s))
 						i += len(s)
+				'''
 				tokens_list.append(tokens)
 			self.expresses.append( \
 					e_fact.create_simple( \

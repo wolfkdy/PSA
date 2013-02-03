@@ -92,24 +92,91 @@ def merge_lr1(all_items, action_tbl, goto_tbl):
 			new_goto_tbl[new_from_item][token] = new_to_item
 	return new_all_items, new_action_tbl, new_goto_tbl
 
+def simplify_lalr(gram, all_items, actions, gotos):
+	dump_start = None
+	dump_actions = dict()
+	dump_gotos = dict()
+	def get_start_state():
+		for itm in all_items:
+			for exp in itm.item_set:	
+				if exp.left_token == gram.start_token and exp.dot_pos == 0:
+					return itm.get_id()
+	dump_start = get_start_state()
+	for itm, edges in actions.iteritems():
+		for token, to_states in edges.iteritems():
+			if itm.get_id() not in dump_actions:
+				dump_actions[itm.get_id()] = dict()
+			if repr(token) not in dump_actions[itm.get_id()]:
+				dump_actions[itm.get_id()][repr(token)] = []
+			for to_state in to_states:
+				if to_state[0] == lr1.ACTION_ACC:
+					dump_actions[itm.get_id()][repr(token)]. \
+						append(('ACTION_ACC'))
+				if to_state[0] == lr1.ACTION_SHIFT:
+					append_itm = ('ACTION_SHIFT', to_state[1].get_id())
+					if append_itm not in dump_actions[itm.get_id()][repr(token)]:
+						dump_actions[itm.get_id()][repr(token)]. \
+							append(append_itm)
+				if to_state[0] == lr1.ACTION_REDUCE:
+					append_itm = ('ACTION_REDUCE', to_state[1].get_simple_repr())
+					dump_actions[itm.get_id()][repr(token)]. \
+						append(append_itm)
+	for itm, edges in gotos.iteritems():
+		for token, to_state in edges.iteritems():
+			if itm.get_id() not in dump_gotos:
+				dump_gotos[itm.get_id()] = dict()
+			dump_gotos[itm.get_id()][repr(token)] = to_state.get_id()
+	return dump_start, dump_actions, dump_gotos	
+
+def dump(start, actions, gotos, fp):
+	import json
+	fd = open(fp, 'w')
+	json.dump({ \
+		'TABLE_TYPE' : 'LALR1',
+		'start' : start, \
+		'action_tbl' : actions, 
+		'goto_tbl' : gotos}, 
+		fd, 
+		indent = 8)
+
+def gen_parsetbl(gram, fp):
+	all_items, raw_goto = lr1.get_lr1_relation(gram)
+	action_dict, goto_dict = lr1.get_parse_table(gram, all_items, raw_goto)	
+	m_items, m_a_dict, m_g_dict = merge_lr1(all_items, action_dict, goto_dict)
+	for m_item in m_items:
+		print m_item
+	print '\n'
+	print m_a_dict
+	s_start, s_as, s_gs = simplify_lalr(gram, m_items, m_a_dict, m_g_dict)
+	dump(s_start, s_as, s_gs, fp)
+
 def main():
 	gram_dict = {
 		'start' : 'S->CC',
 		'other' : ['C->cC|d']
 	}
+	'''
 	gram_dict = {
-		'start' : 'E->E+T',
-		'other' : ['E->T', 'T->T*F', 'T->F', 'F->(E)', 'F->id'],
+		'start' : 'S->L=R|R',
+		'other' : ['L->*R|d', 'R->L']
 	}
+	gram_dict = {
+		'start' : 'S->SS+|SS*|a',
+		'other' : [],
+	}
+	'''
 	gram = grammar.Grammar(gram_dict['start'], gram_dict['other'])
 	gram.normalize()
 	all_items, raw_goto = lr1.get_lr1_relation(gram)
 	action_dict, goto_dict = lr1.get_parse_table(gram, all_items, raw_goto)	
+	print action_dict
+	print '?????'
 	m_items, m_a_dict, m_g_dict = merge_lr1(all_items, action_dict, goto_dict)
-	for item in m_items:
-		print item
-	return
-	print m_items, m_a_dict, m_g_dict
+	s_start, s_as, s_gs = simplify_lalr(gram, m_items, m_a_dict, m_g_dict)
+	dump(s_start, s_as, s_gs, './parsetab')
+	print d_items
+	print d_as
+	print d_gs
 
 if __name__ == '__main__':
 	main()

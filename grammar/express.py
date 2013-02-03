@@ -1,5 +1,5 @@
 #-*- coding: utf-8 -*-
-
+import tokens
 from tokens import token_factory as fact
 
 express_factory = None
@@ -110,7 +110,13 @@ class LR1_Express(Express):
 		return self.right_tokens_list[0][self.dot_pos + 1]
 
 	def is_pending_reduce(self):
-		return self.dot_pos == len(self.right_tokens_list[0])
+		if self.dot_pos == len(self.right_tokens_list[0]):
+			return True
+		#easy to ignore: if all tokens after dot are eps, the exp is also pending reduce
+		for i in xrange(self.dot_pos, len(self.right_tokens_list[0])):
+			if not tokens.is_epsilon(self.right_tokens_list[0][i]):
+				return False
+		return True	
 
 	def get_core_repr(self):
 		s = ''
@@ -121,6 +127,9 @@ class LR1_Express(Express):
 		for i in xrange(self.dot_pos, len(self.right_tokens_list[0])):
 			s += repr(self.right_tokens_list[0][i])
 		return s
+
+	def get_simple_repr(self):
+		return super(LR1_Express, self).__repr__()
 
 	def __repr__(self):
 		s = self.get_core_repr() + ','
