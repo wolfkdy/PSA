@@ -4,6 +4,9 @@ TOKEN_TYPE_TERMINAL = 0
 TOKEN_TYPE_UNTERMINAL = 1
 TOKEN_TYPE_DOT = 2
 
+ASSOC_LEFT = 'left'
+ASSOC_RIGHT = 'right'
+
 class Token(object):
 	def __init__(self, text):
 		self.text = text
@@ -12,9 +15,11 @@ class Token(object):
 		return self.text
 
 class Terminal(Token):
-	def __init__(self, text):
+	def __init__(self, text, asso, piority):
 		super(Terminal, self).__init__(text)
-
+		self.asso = asso
+		self.piority = piority
+		
 class Unterminal(Token):
 	def __init__(self, text):
 		super(Unterminal, self).__init__(text)
@@ -22,6 +27,8 @@ class Unterminal(Token):
 class AccToken(Token):
 	def __init__(self):
 		super(AccToken, self).__init__('$')
+		self.piority = 0
+		self.asso = ASSOC_LEFT
 
 # ε can not be used as terminal token at current
 class Epsilon(Token):
@@ -34,13 +41,22 @@ class TokenFactory(object):
 		self.unterminal_tokens = dict()
 		self.shared_epsilon = Epsilon()
 		self.shared_acc = AccToken()
+		self.spawn_info = dict()
+
+	def set_token_spawn_info(self, left_p, right_p, none_asso = []):
+		#todo : deal with none_associate terminal tokens	
+		for token, p in left_p:
+			self.spawn_info[token] = (ASSOC_LEFT, p)
+		for token, p in right_p:
+			self.spawn_info[token] = (ASSOC_RIGHT, p)
 
 	def get_all_tokens(self):
 		return self.terminal_tokens.values() + self.unterminal_tokens.values()
 
 	def create_terminal(self, text):
 		if text not in self.terminal_tokens:
-			self.terminal_tokens[text] = Terminal(text)
+			spawn_info = self.spawn_info.get(text, (ASSOC_LEFT, 0))
+			self.terminal_tokens[text] = Terminal(text, spawn_info[0], spawn_info[1])
 		return self.terminal_tokens[text]
 		
 	def create_unterminal(self, text):

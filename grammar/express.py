@@ -89,13 +89,25 @@ class Express(object):
 
 #every lr1_express is an expanded express
 class LR1_Express(Express):
-	def __init__(self, left_token, right_tokens, dot_pos, acc_tokens):
+	def __init__(self, left_token, right_tokens, dot_pos, acc_tokens, piority = None):
 		super(LR1_Express, self).__init__(left_token, [right_tokens])
 		self.dot_pos = dot_pos
 		self.acc_tokens = set()
 		for token in acc_tokens:
 			self.acc_tokens.add(token)
-
+		if piority is not None:
+			self.piority = piority
+		else :
+			right_tokens = self.get_right_tokens()
+			piority = 0
+			i = len(right_tokens) - 1
+			while i >= 0:
+				if tokens.is_terminal(right_tokens[i]):
+					piority = right_tokens[i].piority
+					break
+				i -= 1
+			self.piority = piority
+	
 	def get_right_tokens(self):
 		return self.right_tokens_list[0]
 

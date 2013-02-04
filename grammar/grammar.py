@@ -5,11 +5,12 @@ from tokens import token_factory as fact
 from express import express_factory as e_fact
 
 
-def get_first_set_multi(g, tokens):
+def get_first_set_multi(gram, tokens):
+	g = gram.normalized_mode
 	ret = set()
 	eps_token = fact.create_epsilon()
 	for token in tokens:
-		token_set = get_first_set(g, token)
+		token_set = get_first_set(gram, token)
 		ret = ret.union(token_set)
 		if eps_token not in token_set:
 			if eps_token in ret:
@@ -18,8 +19,9 @@ def get_first_set_multi(g, tokens):
 	return ret
 
 #get token t's first set in grammar g
-def get_first_set(g, t):
+def get_first_set(gram, t):
 	ret = set()
+	g = gram.normalized_mode
 	if tokens.is_terminal(t) or tokens.is_epsilon(t):
 		ret.add(t)
 		return ret
@@ -27,7 +29,7 @@ def get_first_set(g, t):
 	exps = g.get_expresses_by_left(t)
 	for exp in exps:
 		for _tokens in exp.right_tokens_list:
-			tmp = get_first_set_multi(g, _tokens)
+			tmp = get_first_set_multi(gram, _tokens)
 			ret = ret.union(tmp)
 	return ret
 
@@ -60,7 +62,10 @@ def split_text_by_ut_tokens(text, ut_set):
 #class Grammar describes a grammar which begins with @start@ 
 class Grammar(object):
 	def __init__(self, start, others):
-		self.is_normalized = False
+		self.is_augmented = False
+		self.is_non_left_rec = False
+		self.is_expanded = False
+		self.normalized_mode = None
 		#undeterminal tokens
 		self.ut_tokens = set()
 		self.expresses = list()
@@ -89,24 +94,17 @@ class Grammar(object):
 			for right_text in right_text_list:
 				i =  0
 				tokens = split_text_by_ut_tokens(right_text, self.ut_tokens)
-				'''
-				tokens = []
-				while i < len(right_text):
-					s = trie.leftmost_match(right_text[i:])
-					if s is None:
-						tokens.append(fact.create_terminal(right_text[i]))
-						assert right_text[i] != 'C', right_text
-						i += 1
-					else :
-						tokens.append(fact.create_unterminal(s))
-						i += len(s)
-				'''
 				tokens_list.append(tokens)
 			self.expresses.append( \
 					e_fact.create_simple( \
 						fact.create_unterminal(left), tokens_list))
 
-	def _eliminate_left_recursive(self):
+	#to a non-ambigous grammar, eliminate left recursive is ok, 
+	#however, to an ambigous one, original information is lost when 
+	#eliminating ambigous by priority of terminal tokens
+	def eliminate_left_recursive(self):
+		if self.is_non_left_rec:
+			return
 		old_ut_tokens = list(self.ut_tokens)
 		new_ut_tokens = list()
 
@@ -138,6 +136,7 @@ class Grammar(object):
 		for new_exp in new_exps:
 			self.ut_tokens.add(new_exp.left_token)
 			self.expresses.append(new_exp)
+		self.is_non_left_rec = True
 
 	def __repr__(self):
 		lst = [repr(itm) for itm in self.expresses ]
@@ -150,34 +149,51 @@ class Grammar(object):
 				lst.append(exp)
 		return lst
 
-	#return the first express of a normalized grammar
+	#return the first express of a expanded grammar
 	def get_first_express(self):
-		assert self.is_normalized, 'get first express of a non-normalized grammar is meaningless'
+		assert self.is_expanded, 'get first express of a non-expanded grammar is meaningless'
 		exps = self.get_expresses_by_left(self.start_token)
 		return exps[0]
 
-	def _augment(self):
+	def augment(self):
+		if self.is_augmented:
+			return
 		tmp = self.start_token
 		#create a different token for new start state
 		self.start_token = fact.create_unterminal(self.start_token.text + "__S")	
 		self.expresses.append(e_fact.create_simple(self.start_token, [[tmp]]))
+		self.is_augmented = True
+
+	def set_normalized_mode(self, gram):
+		self.normalized_mode = gram
 
 	# expand all expresses concated with '|'
-	def _expand(self):
+	def expand(self):
+		if self.is_expanded:
+			return
 		old_lst = self.expresses
 		new_lst = []
 		for itm in old_lst:
 			new_lst.extend(itm.get_expand_form())
 		self.expresses = new_lst
+		self.is_expanded = True
 
 	#prepare self for constructin lr(1)
 	def normalize(self):
-		if self.is_normalized:
-			return
-		self._augment()
-		self._eliminate_left_recursive()
-		self._expand()
-		self.is_normalized = True
+		self.augment()
+		self.eliminate_left_recursive()
+		self.expand()
+
+def prepare_gram(gram_dict):
+	fact.set_token_spawn_info( \
+		gram_dict.get('left_piority', []), gram_dict.get('right_piority', []))
+	n_gram = Grammar(gram_dict['start'], gram_dict['other'])
+	n_gram.normalize()
+	gram = Grammar(gram_dict['start'], gram_dict['other'])
+	gram.augment()
+	gram.expand()
+	gram.set_normalized_mode(n_gram)
+	return gram
 
 def main():
 	gram_dict = {
@@ -194,8 +210,7 @@ def main():
 		'other' : [],
 	}
 	'''
-	gram = Grammar(gram_dict['start'], gram_dict['other'])	
-	gram.normalize()
+	gram = prepare_gram(gram_dict)
 	print gram
 #	print get_first_set_multi(gram, [fact.create_unterminal('C'), fact.create_acc()])
 	return

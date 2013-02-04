@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 import grammar
 import express
+import tokens
 import lr1
 from lr1 import itemset_factory
 from express import express_factory
@@ -103,24 +104,17 @@ def simplify_lalr(gram, all_items, actions, gotos):
 					return itm.get_id()
 	dump_start = get_start_state()
 	for itm, edges in actions.iteritems():
-		for token, to_states in edges.iteritems():
+		for token, to_state in edges.iteritems():
 			if itm.get_id() not in dump_actions:
 				dump_actions[itm.get_id()] = dict()
-			if repr(token) not in dump_actions[itm.get_id()]:
-				dump_actions[itm.get_id()][repr(token)] = []
-			for to_state in to_states:
-				if to_state[0] == lr1.ACTION_ACC:
-					dump_actions[itm.get_id()][repr(token)]. \
-						append(('ACTION_ACC'))
-				if to_state[0] == lr1.ACTION_SHIFT:
-					append_itm = ('ACTION_SHIFT', to_state[1].get_id())
-					if append_itm not in dump_actions[itm.get_id()][repr(token)]:
-						dump_actions[itm.get_id()][repr(token)]. \
-							append(append_itm)
-				if to_state[0] == lr1.ACTION_REDUCE:
-					append_itm = ('ACTION_REDUCE', to_state[1].get_simple_repr())
-					dump_actions[itm.get_id()][repr(token)]. \
-						append(append_itm)
+			if to_state[0] == lr1.ACTION_ACC:
+				dump_actions[itm.get_id()][repr(token)] = 'ACTION_ACC'
+			if to_state[0] == lr1.ACTION_SHIFT:
+				dump_actions[itm.get_id()][repr(token)] = \
+					('ACTION_SHIFT', to_state[1].get_id())
+			if to_state[0] == lr1.ACTION_REDUCE:
+				dump_actions[itm.get_id()][repr(token)] = \
+					('ACTION_REDUCE', to_state[1].get_simple_repr())
 	for itm, edges in gotos.iteritems():
 		for token, to_state in edges.iteritems():
 			if itm.get_id() not in dump_gotos:
@@ -128,6 +122,47 @@ def simplify_lalr(gram, all_items, actions, gotos):
 			dump_gotos[itm.get_id()][repr(token)] = to_state.get_id()
 	return dump_start, dump_actions, dump_gotos	
 
+#TODO(kdy): add logs
+def try_solve_conflect(action_tbl):
+	for from_itm, edges in action_tbl.iteritems():
+		for token, to_items in edges.iteritems():
+			new_to_item = None
+			for itm in to_items:
+				if new_to_item is None:
+					new_to_item = itm
+					continue
+				#impossible to find a conflict on accept-state
+				if itm[0] == lr1.ACTION_ACC:
+					new_to_item = (lr1.ACTION_ACC, )
+					break
+				elif itm[0] == lr1.ACTION_REDUCE: 
+					#reduce-reduce conflect
+					if new_to_item[0] == lr1.ACTION_REDUCE:
+						if new_to_item[1].piority < itm[1].piority:
+							new_to_item = itm
+					#reduce-shift conflect
+					elif new_to_item[0] == lr1.ACTION_SHIFT:
+						if token.piority < itm[1].piority:
+							new_to_item = itm
+						elif token.piority == itm[1].piority:
+						#if current token is left asso and meets a 
+						#reduce_conflect with a product which has equal
+						#piority, use reduce
+							if token.asso == tokens.ASSOC_LEFT:
+								new_to_item = itm
+					else :
+						assert False
+				elif itm[0] == lr1.ACTION_SHIFT:
+					#reduce-shift conflect
+					if new_to_item[0] == lr1.ACTION_REDUCE:
+						if new_to_item[1].piority < token.piority:
+							new_to_item = itm
+						elif new_to_item[1].piority == token.piority:	
+							if token.asso == tokens.ASSOC_RIGHT:
+								new_to_item = itm
+					#shift-shift can never gen a conflect
+			action_tbl[from_itm][token] = new_to_item
+	
 def dump(start, actions, gotos, fp):
 	import json
 	fd = open(fp, 'w')
@@ -143,42 +178,11 @@ def gen_parsetbl(gram, fp):
 	all_items, raw_goto = lr1.get_lr1_relation(gram)
 	action_dict, goto_dict = lr1.get_parse_table(gram, all_items, raw_goto)	
 	m_items, m_a_dict, m_g_dict = merge_lr1(all_items, action_dict, goto_dict)
-	for m_item in m_items:
-		print m_item
-	print '\n'
 	print m_a_dict
+	try_solve_conflect(m_a_dict)
+	print '\n\n'
+	for k, v in m_a_dict.iteritems():
+		print k, v
 	s_start, s_as, s_gs = simplify_lalr(gram, m_items, m_a_dict, m_g_dict)
 	dump(s_start, s_as, s_gs, fp)
-
-def main():
-	gram_dict = {
-		'start' : 'S->CC',
-		'other' : ['C->cC|d']
-	}
-	'''
-	gram_dict = {
-		'start' : 'S->L=R|R',
-		'other' : ['L->*R|d', 'R->L']
-	}
-	gram_dict = {
-		'start' : 'S->SS+|SS*|a',
-		'other' : [],
-	}
-	'''
-	gram = grammar.Grammar(gram_dict['start'], gram_dict['other'])
-	gram.normalize()
-	all_items, raw_goto = lr1.get_lr1_relation(gram)
-	action_dict, goto_dict = lr1.get_parse_table(gram, all_items, raw_goto)	
-	print action_dict
-	print '?????'
-	m_items, m_a_dict, m_g_dict = merge_lr1(all_items, action_dict, goto_dict)
-	s_start, s_as, s_gs = simplify_lalr(gram, m_items, m_a_dict, m_g_dict)
-	dump(s_start, s_as, s_gs, './parsetab')
-	print d_items
-	print d_as
-	print d_gs
-
-if __name__ == '__main__':
-	main()
-
 
