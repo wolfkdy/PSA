@@ -59,7 +59,6 @@ class Thompson_AutoMata(object):
 		self.build_complex(text)
 
 	def build_complex(self, text):
-		print 'build complex', text
 		sub_strs = get_substrs_by_or(text)
 		if len(sub_strs) > 1:
 			new_end = NFA_Node()
@@ -81,22 +80,18 @@ class Thompson_AutoMata(object):
 			tmp = q[0]
 			q = q[1 : ]
 			for k, v in tmp.edges.iteritems():
-				print tmp.index, '---', k, '--->', v.index
 				if v in tabu:
 					continue
 				tabu.add(v)
 				q.append(v)	
 			for v in tmp.eps_set:
-				print tmp.index, '---', 'eps', '--->', v.index
 				if v in tabu:
 					continue
 				tabu.add(v)
 				q.append(v)
-		print 'start', self.start.index, 'end', self.end.index
 	
 	#the regex @depth 0 is a not with | rule
 	def build_single(self, text):
-		print 'build single', text
 		right = -1
 		if len(text) == 0: # null str, eps trans
 			return

@@ -63,12 +63,31 @@ class Regex(object):
 		fd = open(path, 'w')
 		json.dump(self.dfa, fd, indent = 8)
 
+	def get_dot_string(self):
+		if not self.compiled:
+			self.compile()
+		ret = """digraph "%s" {
+			rankdir=LR;
+			size="%s,%s"
+			node [shape = doublecircle]; %s;
+			node [shape = circle];
+			%s
+			}
+		"""	
+		trans_list = []
+		for k, v in self.dfa['trans'].iteritems():
+			for sub_k, sub_v in v.iteritems():
+				trans_list.append((str(k), str(sub_v), str(sub_k)))
+
+		
+		trans = '\n'.join(['%s -> %s [ label = "%s" ];' % itm for itm in trans_list])
+		return ret % (self.raw_regex, 40, 40, ' '.join([str(itm) for itm in self.dfa['end']]), trans)
+
 	def compile(self):
 		am = nfa.Thompson_AutoMata()
 		am.build(self.raw_regex)
 		_, __, ___ = nfa2dfa.construct_subsets(am)	
 		dfa, start, end = _simplify(_, __, ___)	
-		print 'after simplify', dfa, start, end
 		self.dfa = {'trans' :dfa, "start" : start, "end" : end}
 		self.compiled = True
 
@@ -76,4 +95,4 @@ if __name__ == '__main__':
 	r = Regex('a(a|b)*abc')
 #	r = Regex('a')
 	r.compile()
-	
+	print r.get_dot_string()	

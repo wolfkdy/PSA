@@ -46,7 +46,6 @@ def construct_subsets(s):
 			if tmp.get_identity() not in graph:
 				graph[tmp.get_identity()] = dict()
 			graph[tmp.get_identity()][input] = goto_states.get_identity()
-	print graph, dfa_start, dfa_end
 	return graph, dfa_start, dfa_end
 
 # get the eps closure of a nfa state
