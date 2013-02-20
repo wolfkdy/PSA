@@ -174,13 +174,43 @@ def dump(start, actions, gotos, fp):
 		fd, 
 		indent = 8)
 
-def gen_parsetbl(gram, fp):
+def dump_dot_string(action_dict, goto_dict, dot_path):
+	ret = """digraph "%s" {
+			rankdir=LR;
+			size="%s,%s"
+			node [shape = box];
+			%s
+			}
+	"""	
+	trans_list = []
+	for k, v in action_dict.iteritems():
+		for sub_k, sub_v in v.iteritems():
+			if sub_v[0] != lr1.ACTION_SHIFT:
+				continue
+			frm = '"%s"' % ''.join(['%s\\n' %  repr(itm) for itm in k.get_sorted_items()])
+			to = '"%s"' % ''.join(['%s\\n' % repr(itm) for itm in sub_v[1].get_sorted_items()])
+			trans_list.append((frm, to, repr(sub_k)))
+	for k, v in goto_dict.iteritems():
+		for sub_k, sub_v in v.iteritems():
+			frm = '"%s"' % ''.join(['%s\\n' %  repr(itm) for itm in k.get_sorted_items()])
+			to = '"%s"' % ''.join(['%s\\n' % repr(itm) for itm in sub_v.get_sorted_items()])
+			trans_list.append((frm, to, repr(sub_k)))
+	trans = '\n'.join(['%s -> %s [ label = %s ];' % itm for itm in trans_list])
+	ret = ret % ('LALR1', 40, 40, trans, )
+	fd = open(dot_path, 'w')
+	fd.write(ret)
+	print ret, '???????????????????????'
+	fd.close()	
+
+def gen_parsetbl(gram, fp, dot_path = None):
 	all_items, raw_goto = lr1.get_lr1_relation(gram)
 	action_dict, goto_dict = lr1.get_parse_table(gram, all_items, raw_goto)	
 	m_items, m_a_dict, m_g_dict = merge_lr1(all_items, action_dict, goto_dict)
 	print m_a_dict
 	try_solve_conflect(m_a_dict)
 	print '\n\n'
+	if dot_path is not None:
+		dump_dot_string(m_a_dict, m_g_dict, dot_path)
 	for k, v in m_a_dict.iteritems():
 		print k, v
 	s_start, s_as, s_gs = simplify_lalr(gram, m_items, m_a_dict, m_g_dict)
