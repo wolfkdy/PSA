@@ -47,12 +47,6 @@ def merge_lr1(all_items, action_tbl, goto_tbl):
 			continue
 		lst = [all_item_list[i]]
 		for j in xrange(i + 1, len(all_item_list)):
-			'''
-			print all_item_list[i]
-			print all_item_list[j]
-			print is_same_core(all_item_list[i], \
-				all_item_list[j])
-			'''
 			if is_same_core(all_item_list[j], all_item_list[i]):
 				lst.append(all_item_list[j])
 		merged_item = merge(lst)
@@ -199,20 +193,15 @@ def dump_dot_string(action_dict, goto_dict, dot_path):
 	ret = ret % ('LALR1', 40, 40, trans, )
 	fd = open(dot_path, 'w')
 	fd.write(ret)
-	print ret, '???????????????????????'
 	fd.close()	
 
 def gen_parsetbl(gram, fp, dot_path = None):
 	all_items, raw_goto = lr1.get_lr1_relation(gram)
 	action_dict, goto_dict = lr1.get_parse_table(gram, all_items, raw_goto)	
 	m_items, m_a_dict, m_g_dict = merge_lr1(all_items, action_dict, goto_dict)
-	print m_a_dict
 	try_solve_conflect(m_a_dict)
-	print '\n\n'
 	if dot_path is not None:
 		dump_dot_string(m_a_dict, m_g_dict, dot_path)
-	for k, v in m_a_dict.iteritems():
-		print k, v
 	s_start, s_as, s_gs = simplify_lalr(gram, m_items, m_a_dict, m_g_dict)
 	dump(s_start, s_as, s_gs, fp)
 
