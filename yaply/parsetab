@@ -1,110 +1,315 @@
 {
         "TABLE_TYPE": "LALR1", 
         "goto_tbl": {
-                "1": {
-                        "S": 6
+                "64": {
+                        "E": 67
                 }, 
-                "18": {
-                        "S": 23
+                "66": {
+                        "E": 65
                 }, 
-                "22": {
-                        "S": 20
+                "70": {
+                        "E": 73
+                }, 
+                "72": {
+                        "E": 69
+                }, 
+                "75": {
+                        "E": 71
+                }, 
+                "44": {
+                        "E": 42
                 }
         }, 
         "action_tbl": {
-                "1": {
-                        "i": [
-                                [
-                                        "ACTION_SHIFT", 
-                                        22
-                                ]
+                "64": {
+                        "NUM": [
+                                "ACTION_SHIFT", 
+                                68
                         ], 
-                        "a": [
-                                [
-                                        "ACTION_SHIFT", 
-                                        19
-                                ]
+                        "LP": [
+                                "ACTION_SHIFT", 
+                                70
                         ]
                 }, 
-                "6": {
-                        "$": [
-                                "ACTION_ACC"
-                        ]
-                }, 
-                "18": {
-                        "i": [
-                                [
-                                        "ACTION_SHIFT", 
-                                        22
-                                ]
-                        ], 
-                        "a": [
-                                [
-                                        "ACTION_SHIFT", 
-                                        19
-                                ]
-                        ]
-                }, 
-                "19": {
-                        "e": [
-                                [
-                                        "ACTION_REDUCE", 
-                                        "S->a"
-                                ]
+                "65": {
+                        "RP": [
+                                "ACTION_REDUCE", 
+                                "E->EADDE", 
+                                3
                         ], 
                         "$": [
-                                [
-                                        "ACTION_REDUCE", 
-                                        "S->a"
-                                ]
+                                "ACTION_REDUCE", 
+                                "E->EADDE", 
+                                3
+                        ], 
+                        "ADD": [
+                                "ACTION_REDUCE", 
+                                "E->EADDE", 
+                                3
+                        ], 
+                        "MUL": [
+                                "ACTION_SHIFT", 
+                                64
+                        ], 
+                        "DIV": [
+                                "ACTION_SHIFT", 
+                                72
+                        ], 
+                        "SUB": [
+                                "ACTION_REDUCE", 
+                                "E->EADDE", 
+                                3
                         ]
                 }, 
-                "20": {
-                        "e": [
-                                [
-                                        "ACTION_REDUCE", 
-                                        "S->iS"
-                                ], 
-                                [
-                                        "ACTION_SHIFT", 
-                                        18
-                                ]
+                "66": {
+                        "NUM": [
+                                "ACTION_SHIFT", 
+                                68
+                        ], 
+                        "LP": [
+                                "ACTION_SHIFT", 
+                                70
+                        ]
+                }, 
+                "67": {
+                        "RP": [
+                                "ACTION_REDUCE", 
+                                "E->EMULE", 
+                                3
                         ], 
                         "$": [
-                                [
-                                        "ACTION_REDUCE", 
-                                        "S->iS"
-                                ]
-                        ]
-                }, 
-                "22": {
-                        "i": [
-                                [
-                                        "ACTION_SHIFT", 
-                                        22
-                                ]
+                                "ACTION_REDUCE", 
+                                "E->EMULE", 
+                                3
                         ], 
-                        "a": [
-                                [
-                                        "ACTION_SHIFT", 
-                                        19
-                                ]
+                        "ADD": [
+                                "ACTION_REDUCE", 
+                                "E->EMULE", 
+                                3
+                        ], 
+                        "MUL": [
+                                "ACTION_REDUCE", 
+                                "E->EMULE", 
+                                3
+                        ], 
+                        "DIV": [
+                                "ACTION_REDUCE", 
+                                "E->EMULE", 
+                                3
+                        ], 
+                        "SUB": [
+                                "ACTION_REDUCE", 
+                                "E->EMULE", 
+                                3
                         ]
                 }, 
-                "23": {
-                        "e": [
-                                [
-                                        "ACTION_REDUCE", 
-                                        "S->iSeS"
-                                ]
+                "68": {
+                        "RP": [
+                                "ACTION_REDUCE", 
+                                "E->NUM", 
+                                1
                         ], 
                         "$": [
-                                [
-                                        "ACTION_REDUCE", 
-                                        "S->iSeS"
-                                ]
+                                "ACTION_REDUCE", 
+                                "E->NUM", 
+                                1
+                        ], 
+                        "ADD": [
+                                "ACTION_REDUCE", 
+                                "E->NUM", 
+                                1
+                        ], 
+                        "MUL": [
+                                "ACTION_REDUCE", 
+                                "E->NUM", 
+                                1
+                        ], 
+                        "DIV": [
+                                "ACTION_REDUCE", 
+                                "E->NUM", 
+                                1
+                        ], 
+                        "SUB": [
+                                "ACTION_REDUCE", 
+                                "E->NUM", 
+                                1
+                        ]
+                }, 
+                "69": {
+                        "RP": [
+                                "ACTION_REDUCE", 
+                                "E->EDIVE", 
+                                3
+                        ], 
+                        "$": [
+                                "ACTION_REDUCE", 
+                                "E->EDIVE", 
+                                3
+                        ], 
+                        "ADD": [
+                                "ACTION_REDUCE", 
+                                "E->EDIVE", 
+                                3
+                        ], 
+                        "MUL": [
+                                "ACTION_REDUCE", 
+                                "E->EDIVE", 
+                                3
+                        ], 
+                        "DIV": [
+                                "ACTION_REDUCE", 
+                                "E->EDIVE", 
+                                3
+                        ], 
+                        "SUB": [
+                                "ACTION_REDUCE", 
+                                "E->EDIVE", 
+                                3
+                        ]
+                }, 
+                "70": {
+                        "NUM": [
+                                "ACTION_SHIFT", 
+                                68
+                        ], 
+                        "LP": [
+                                "ACTION_SHIFT", 
+                                70
+                        ]
+                }, 
+                "71": {
+                        "RP": [
+                                "ACTION_REDUCE", 
+                                "E->ESUBE", 
+                                3
+                        ], 
+                        "$": [
+                                "ACTION_REDUCE", 
+                                "E->ESUBE", 
+                                3
+                        ], 
+                        "ADD": [
+                                "ACTION_REDUCE", 
+                                "E->ESUBE", 
+                                3
+                        ], 
+                        "MUL": [
+                                "ACTION_SHIFT", 
+                                64
+                        ], 
+                        "DIV": [
+                                "ACTION_SHIFT", 
+                                72
+                        ], 
+                        "SUB": [
+                                "ACTION_REDUCE", 
+                                "E->ESUBE", 
+                                3
+                        ]
+                }, 
+                "72": {
+                        "NUM": [
+                                "ACTION_SHIFT", 
+                                68
+                        ], 
+                        "LP": [
+                                "ACTION_SHIFT", 
+                                70
+                        ]
+                }, 
+                "73": {
+                        "MUL": [
+                                "ACTION_SHIFT", 
+                                64
+                        ], 
+                        "DIV": [
+                                "ACTION_SHIFT", 
+                                72
+                        ], 
+                        "RP": [
+                                "ACTION_SHIFT", 
+                                74
+                        ], 
+                        "SUB": [
+                                "ACTION_SHIFT", 
+                                75
+                        ], 
+                        "ADD": [
+                                "ACTION_SHIFT", 
+                                66
+                        ]
+                }, 
+                "42": {
+                        "MUL": [
+                                "ACTION_SHIFT", 
+                                64
+                        ], 
+                        "DIV": [
+                                "ACTION_SHIFT", 
+                                72
+                        ], 
+                        "ADD": [
+                                "ACTION_SHIFT", 
+                                66
+                        ], 
+                        "SUB": [
+                                "ACTION_SHIFT", 
+                                75
+                        ], 
+                        "$": "ACTION_ACC"
+                }, 
+                "75": {
+                        "NUM": [
+                                "ACTION_SHIFT", 
+                                68
+                        ], 
+                        "LP": [
+                                "ACTION_SHIFT", 
+                                70
+                        ]
+                }, 
+                "44": {
+                        "NUM": [
+                                "ACTION_SHIFT", 
+                                68
+                        ], 
+                        "LP": [
+                                "ACTION_SHIFT", 
+                                70
+                        ]
+                }, 
+                "74": {
+                        "RP": [
+                                "ACTION_REDUCE", 
+                                "E->LPERP", 
+                                3
+                        ], 
+                        "$": [
+                                "ACTION_REDUCE", 
+                                "E->LPERP", 
+                                3
+                        ], 
+                        "ADD": [
+                                "ACTION_REDUCE", 
+                                "E->LPERP", 
+                                3
+                        ], 
+                        "MUL": [
+                                "ACTION_REDUCE", 
+                                "E->LPERP", 
+                                3
+                        ], 
+                        "DIV": [
+                                "ACTION_REDUCE", 
+                                "E->LPERP", 
+                                3
+                        ], 
+                        "SUB": [
+                                "ACTION_REDUCE", 
+                                "E->LPERP", 
+                                3
                         ]
                 }
         }, 
-        "start": 1
+        "start": 44
 }

@@ -91,6 +91,24 @@ class Regex(object):
 		self.dfa = {'trans' :dfa, "start" : start, "end" : end}
 		self.compiled = True
 
+def parse(re_dict, text):
+	for k in re_dict.iterkeys():
+		re_dict[k] = Regex(re_dict[k]) 
+	ret = []
+	while text:
+		leftmost, key = len(text), None
+		for k, v in re_dict.iteritems():
+			tmp_ret = v.match(text)
+			if leftmost > tmp_ret[1]:
+				leftmost = tmp_ret[1]
+				key = k
+		if leftmost == len(text):
+			return False, None
+		print ret
+		ret.append((key, text[: leftmost + 1]))
+		text = text[leftmost + 1: ]
+	return True, ret
+
 if __name__ == '__main__':
 	r = Regex('a(a|b)*abc')
 #	r = Regex('a')

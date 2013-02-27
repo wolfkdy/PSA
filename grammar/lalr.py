@@ -108,7 +108,10 @@ def simplify_lalr(gram, all_items, actions, gotos):
 					('ACTION_SHIFT', to_state[1].get_id())
 			if to_state[0] == lr1.ACTION_REDUCE:
 				dump_actions[itm.get_id()][repr(token)] = \
-					('ACTION_REDUCE', to_state[1].get_simple_repr())
+					('ACTION_REDUCE', \
+					to_state[1].get_simple_repr(), \
+					len(to_state[1].get_right_tokens()))
+
 	for itm, edges in gotos.iteritems():
 		for token, to_state in edges.iteritems():
 			if itm.get_id() not in dump_gotos:
@@ -210,7 +213,7 @@ def parse(text, parse_tbl):
 	cnt = 0
 	a_tbl = parse_tbl['action_tbl']
 	g_tbl = parse_tbl['goto_tbl']
-	stk = [parse_tbl['start']]
+	stk = [str(parse_tbl['start'])]
 	while text:
 		s = stk[-1]		
 		if a_tbl[s][text[0]][0] == 'ACTION_SHIFT':
@@ -218,11 +221,11 @@ def parse(text, parse_tbl):
 			text = text[1 : ]
 		elif a_tbl[s][text[0]][0] == 'ACTION_REDUCE':
 			token_0, token_1 = a_tbl[s][text[0]][1].split('->')
-			token_num = len(token_1)
+			token_num = a_tbl[s][text[0]][2]
 			stk = stk[ : -token_num]
 			stk.append(str(g_tbl[stk[-1]][token_0]))
 			print token_0, '->', token_1
-		elif a_tbl[s][text[0]][0] == 'ACTION_ACC'):
+		elif a_tbl[s][text[0]][0] == 'ACTION_ACC':
 			print 'parse done'
 			break
 		else :

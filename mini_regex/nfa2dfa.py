@@ -43,6 +43,8 @@ def construct_subsets(s):
 			if goto_states.get_identity() not in tabu:
 				q.append(goto_states)
 				tabu.add(goto_states.get_identity())
+				if goto_states.get_identity() not in graph:
+					graph[goto_states.get_identity()] = dict()
 			if tmp.get_identity() not in graph:
 				graph[tmp.get_identity()] = dict()
 			graph[tmp.get_identity()][input] = goto_states.get_identity()
