@@ -205,3 +205,27 @@ def gen_parsetbl(gram, fp, dot_path = None):
 	s_start, s_as, s_gs = simplify_lalr(gram, m_items, m_a_dict, m_g_dict)
 	dump(s_start, s_as, s_gs, fp)
 
+
+def parse(text, parse_tbl):
+	cnt = 0
+	a_tbl = parse_tbl['action_tbl']
+	g_tbl = parse_tbl['goto_tbl']
+	stk = [parse_tbl['start']]
+	while text:
+		s = stk[-1]		
+		if a_tbl[s][text[0]][0] == 'ACTION_SHIFT':
+			stk.append(str(a_tbl[s][text[0]][1]))
+			text = text[1 : ]
+		elif a_tbl[s][text[0]][0] == 'ACTION_REDUCE':
+			token_0, token_1 = a_tbl[s][text[0]][1].split('->')
+			token_num = len(token_1)
+			stk = stk[ : -token_num]
+			stk.append(str(g_tbl[stk[-1]][token_0]))
+			print token_0, '->', token_1
+		elif a_tbl[s][text[0]][0] == 'ACTION_ACC'):
+			print 'parse done'
+			break
+		else :
+			print 'error'
+			break
+
