@@ -214,11 +214,14 @@ def parse(text, parse_tbl):
 	a_tbl = parse_tbl['action_tbl']
 	g_tbl = parse_tbl['goto_tbl']
 	stk = [str(parse_tbl['start'])]
+	text += [('$', '$')]
 	while text:
 		s = stk[-1]		
 		token = text[0][0]
-		print token
-		if a_tbl[s][token][0] == 'ACTION_SHIFT':
+		if a_tbl[s][token] == 'ACTION_ACC':
+			print 'parse done'
+			break
+		elif a_tbl[s][token][0] == 'ACTION_SHIFT':
 			stk.append(str(a_tbl[s][token][1]))
 			text = text[1 : ]
 		elif a_tbl[s][token][0] == 'ACTION_REDUCE':
@@ -227,9 +230,6 @@ def parse(text, parse_tbl):
 			stk = stk[ : -token_num]
 			stk.append(str(g_tbl[stk[-1]][token_0]))
 			print token_0, '->', token_1
-		elif a_tbl[s][token][0] == 'ACTION_ACC':
-			print 'parse done'
-			break
 		else :
 			print 'error'
 			break
