@@ -48,9 +48,9 @@ class Regex(object):
 
 		if i == len(text):
 			if now in self.dfa['end']:
-				return True, i - 1
+				return True, i 
 			else :
-				return False, i - 1
+				return False, i
 		return False, i	
 
 	def minimize(self):
@@ -92,21 +92,22 @@ class Regex(object):
 		self.compiled = True
 
 def parse(re_dict, text):
+	#leftmost match
 	for k in re_dict.iterkeys():
 		re_dict[k] = Regex(re_dict[k]) 
 	ret = []
 	while text:
-		leftmost, key = len(text), None
+		leftmost, key = len(text) + 1, None
 		for k, v in re_dict.iteritems():
 			tmp_ret = v.match(text)
+			if tmp_ret[1] == 0: continue
 			if leftmost > tmp_ret[1]:
 				leftmost = tmp_ret[1]
 				key = k
-		if leftmost == len(text):
+		if leftmost == len(text) + 1:
 			return False, None
-		print ret
-		ret.append((key, text[: leftmost + 1]))
-		text = text[leftmost + 1: ]
+		ret.append((key, text[: leftmost]))
+		text = text[leftmost: ]
 	return True, ret
 
 if __name__ == '__main__':
