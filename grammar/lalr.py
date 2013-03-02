@@ -209,26 +209,89 @@ def gen_parsetbl(gram, fp, dot_path = None):
 	dump(s_start, s_as, s_gs, fp)
 
 
+class Node(object):
+	ID = 1
+	def __init__(self):
+		self.parent = None
+		self.child_list = []
+		self.identity = Node.ID
+		Node.ID += 1
+
+class ValueNode(Node):
+	def __init__(self, val):
+		self.value = val
+		super(ValueNode, self).__init__()
+
+	def __repr__(self):
+		return self.value
+	
+class FormalNode(Node):
+	def __init__(self, val):
+		self.value = val
+		super(FormalNode, self).__init__()
+
+	def __repr__(self):
+		return self.value
+
+def print_tree(node, level = 0):
+	child_mark = ''
+	if len(node.child_list) >= 1:
+		child_mark = '---->'
+	print ''.join(['\t' for i in xrange(level)]), node.value, child_mark
+	for itm in node.child_list:
+		print_tree(itm, level + 1)
+
+def dump_ast(node, fp):
+	fd = open(fp, 'w')
+	ret = """digraph "ast" {
+	rankdir=LR;
+	size="100,100"
+	node [shape = box];
+	%s
+	}
+	"""	
+	dot_s_lst = []
+	def walk_tree(r):
+		for ch in r.child_list:
+			dot_s_lst.append('"ID=%s\\n%s" -> "ID=%s\\n%s"' % (r.identity, \
+				r.value, \
+				ch.identity, \
+				ch.value))
+			walk_tree(ch)
+	walk_tree(node)
+	fd.write(ret % '\n'.join(dot_s_lst))
+
 def parse(text, parse_tbl):
 	cnt = 0
 	a_tbl = parse_tbl['action_tbl']
 	g_tbl = parse_tbl['goto_tbl']
 	stk = [str(parse_tbl['start'])]
 	text += [('$', '$')]
+	ast_stk = []
 	while text:
 		s = stk[-1]		
 		token = text[0][0]
 		if a_tbl[s][token] == 'ACTION_ACC':
 			print 'parse done'
+			assert len(ast_stk) == 1
+			print_tree(ast_stk[0])
+			dump_ast(ast_stk[0], './ast.dot')
 			break
 		elif a_tbl[s][token][0] == 'ACTION_SHIFT':
 			stk.append(str(a_tbl[s][token][1]))
+			ast_stk.append(ValueNode(text[0][1]))
 			text = text[1 : ]
 		elif a_tbl[s][token][0] == 'ACTION_REDUCE':
 			token_0, token_1 = a_tbl[s][token][1].split('->')
 			token_num = a_tbl[s][token][2]
+			formal_node = FormalNode(token_0)
+			for itm in ast_stk[-token_num : ]:
+				formal_node.child_list.append(itm)
+				itm.parent = formal_node
 			stk = stk[ : -token_num]
+			ast_stk = ast_stk[ : -token_num]
 			stk.append(str(g_tbl[stk[-1]][token_0]))
+			ast_stk.append(formal_node)
 			print token_0, '->', token_1
 		else :
 			print 'error'

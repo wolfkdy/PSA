@@ -25,7 +25,7 @@ if __name__ == '__main__':
 	gram = grammar.prepare_gram(gram_dict)
 	lalr.gen_parsetbl(gram, './parsetab', './dot_str')	
 	parse_tbl = json.load(open('./parsetab'))
-	text = '5+[1/2![3!4]]'
+	text = '5.13+[1.11/2.2![3.1!4]]'
 	ret, token_list = mini_regex.parse(lexical_tbl, text)
 	print text
 	lalr.parse(token_list, parse_tbl)
