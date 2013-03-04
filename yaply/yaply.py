@@ -13,10 +13,10 @@ s_n = '0|1|2|3|4|5|6|7|8|9' #single number
 lexical_tbl = {'NUM' : '(%s)(%s)*.(%s)*(%s)(%s)*' % (s_n, s_n, s_n, s_n, s_n),
 		'ADD'   : '+',
 		'SUB' 	: '-',
-		'MUL'   : '!',
+		'MUL'   : '\*',
 		'DIV'	: '/',
-		'LP'	: '[',
-		'RP'   : ']',
+		'LP'	: '\(',
+		'RP'   : '\)',
 }
 syntax_tbl = ('E->E ADD E|E SUB E|E DIV E|E MUL E|LP E RP', 'E->NUM')
 left = (('ADD', 0), ('SUB', 0), ('MUL', 1), ('DIV', 1))
@@ -25,7 +25,7 @@ if __name__ == '__main__':
 	gram = grammar.prepare_gram(gram_dict)
 	lalr.gen_parsetbl(gram, './parsetab', './dot_str')	
 	parse_tbl = json.load(open('./parsetab'))
-	text = '5.13+[1.11/2.2![3.1!4]]'
+	text = '5.13+(1.11/2.2*(3.1*4))'
 	ret, token_list = mini_regex.parse(lexical_tbl, text)
 	print text
 	lalr.parse(token_list, parse_tbl)

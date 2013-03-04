@@ -8,13 +8,18 @@ def trim_blank(text):
 def get_match_right_bra(text, idx):
 	assert text[idx] == '('
 	cnt = 0
-	for i in xrange(idx, len(text)):
+	i = idx
+	while i < len(text):
+		if text[i] == '\\':
+			i += 2
+			continue
 		if text[i] == '(':
 			cnt += 1
 		elif text[i] == ')':
 			cnt -= 1
 		if cnt == 0:
 			return i
+		i += 1
 	return -1
 
 def get_substrs_by_or(text):
@@ -23,6 +28,9 @@ def get_substrs_by_or(text):
 	right = 0
 	ret = []
 	while right < len(text):
+		if text[right] == '\\':
+			right += 2
+			continue
 		if text[right] == '(':
 			depth += 1
 		elif text[right] == ')':
@@ -116,10 +124,16 @@ class Thompson_AutoMata(object):
 		else :
 			am = Thompson_AutoMata()
 			am.unaccept_eps()
-			am.start.edges[text[0]] = am.end
+			if text[0] == '\\':
+				am.start.edges[text[1]] = am.end
+			else :
+				am.start.edges[text[0]] = am.end
 			self.end.eps_set.add(am.start)
 			self.end = am.end
-			right = 1
+			if text[0] == '\\':
+				right = 2
+			else :
+				right = 1
 
 		am1 = Thompson_AutoMata()
 		am1.build_complex(text[right : ])
