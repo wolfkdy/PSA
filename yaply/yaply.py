@@ -25,10 +25,15 @@ left = (('ADD', 0), ('SUB', 0), ('MUL', 1), ('DIV', 1))
 s_n = '0|1|2|3|4|5|6|7|8|9' #single number
 
 #字符串不支持转意
+#string literal
 def gen_s_s():
 	return '|'.join([chr(ord('a') + i) for i in xrange(27)])
 	# 额，自己写的 regex 对枚举式正则处理效率很慢的。所以，字符串就先定义为小写字母组成吧
 	return '|'.join([chr(i) for i in xrange(256) if chr(i) != "'"])
+
+#name literal
+def gen_n_s():
+	pass
 
 lexical_tbl = {'NUM' : '(%s)(%s)*.(%s)*(%s)(%s)*' % (s_n, s_n, s_n, s_n, s_n),
 		'ADD'   : '+',

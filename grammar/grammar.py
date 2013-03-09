@@ -36,6 +36,16 @@ def get_first_set(gram, t):
 #leftmost match rule
 #TODO(kdy): use aho-corasick automata to speedup this process
 def split_text_by_ut_tokens(text, ut_set):
+	segs = [itm for itm in text.split(' ') if itm != '']
+	ut_segs = [itm.text for itm in ut_set]
+	ret = []
+	for itm in segs:
+		if itm in ut_segs:
+			ret.append(fact.create_unterminal(itm))
+		else :
+			ret.append(fact.create_terminal(itm))
+	return ret
+	return [fact.create_terminal(itm) for itm in segs if itm not in ut_segs]
 	i = 0
 	tokens = []
 	while i < len(text):
@@ -69,12 +79,16 @@ class Grammar(object):
 		#undeterminal tokens
 		self.ut_tokens = set()
 		self.expresses = list()
-		start = start.replace(' ', '')
-		others = [itm.replace(' ', '') for itm in others]
+		start = start.strip()
+#		start = start.replace(' ', '')
+#		others = [itm.replace(' ', '') for itm in others]
+		others = [itm.strip() for itm in others]
 		for itm in others:
 			left, right = itm.split('->')
+			left.strip()
 			self.ut_tokens.add(fact.create_unterminal(left))
 		left, right = start.split('->')
+		left.strip()
 		self.start_token = fact.create_unterminal(left)
 		self.ut_tokens.add(self.start_token)
 
@@ -85,6 +99,8 @@ class Grammar(object):
 		for itm in others:
 			left, right = itm.split('->')
 			right_text_list = right.split('|')
+			right_text_list = \
+				[itm.strip() for itm in right_text_list]
 			if left not in left_right_dict:
 				left_right_dict[left] = []
 			left_right_dict[left].extend(right_text_list)
@@ -92,9 +108,10 @@ class Grammar(object):
 		for left, right_text_list in left_right_dict.iteritems():
 			tokens_list = []
 			for right_text in right_text_list:
-				i =  0
+				print right_text
 				tokens = split_text_by_ut_tokens(right_text, self.ut_tokens)
 				tokens_list.append(tokens)
+				print tokens
 			self.expresses.append( \
 					e_fact.create_simple( \
 						fact.create_unterminal(left), tokens_list))
