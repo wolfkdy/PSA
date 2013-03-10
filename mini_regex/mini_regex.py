@@ -96,6 +96,7 @@ def parse(re_dict, text):
 	for k in re_dict.iterkeys():
 		re_dict[k] = Regex(re_dict[k]) 
 	ret = []
+	print text
 	while text:
 		leftmost, key = len(text) + 1, None
 		for k, v in re_dict.iteritems():
@@ -107,6 +108,7 @@ def parse(re_dict, text):
 		if leftmost == len(text) + 1:
 			return False, None
 		ret.append((key, text[: leftmost]))
+	#	print ret
 		text = text[leftmost: ]
 	return True, ret
 

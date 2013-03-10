@@ -33,8 +33,10 @@ def gen_s_s():
 
 #name literal
 def gen_n_s():
-	pass
-
+	s = '|'.join([chr(ord('a') + i) for i in xrange(27)])
+	# 变量名必须以下划线开头,虽然没有这么做的必要，（如果不这么做，可以在词法分析的时候加额外判断)
+	return '_(%s)*' % s
+ 
 lexical_tbl = {'NUM' : '(%s)(%s)*.(%s)*(%s)(%s)*' % (s_n, s_n, s_n, s_n, s_n),
 		'ADD'   : '+',
 		'SUB' 	: '-',
@@ -62,6 +64,7 @@ lexical_tbl = {'NUM' : '(%s)(%s)*.(%s)*(%s)(%s)*' % (s_n, s_n, s_n, s_n, s_n),
 		'LE' 	: '<=',
 		'MOD'	: '%',
 		'QUOT'  : ',',
+		'NAME'  : gen_n_s(),
 }
 syntax_tbl = (  'expr->LP expr RP',
 		'expr->expr EQ expr',
@@ -75,30 +78,42 @@ syntax_tbl = (  'expr->LP expr RP',
 		'expr->expr DIV expr',
 		'expr->NUM',
 		'expr->STRING',	
+		'expr->NAME',
 		'expr->function_list',
 		'expr->expr function_list expr',
 		'expr->function_list expr',
 		'expr->expr function_list',
+		'expr->statlist',
 		'function_list->function_list function', \
 		'function_list->function', \
-		'function->FUNCTION STRING LP parlist RP function_block END', \
-		'parlist->STRING',\
-		'parlist->parlist QUOT STRING',\
+		'function->FUNCTION NAME LP parlist RP function_block END', \
+		'parlist->NAME',\
+		'parlist->parlist QUOT NAME',\
 		'function_block->statlist ret',\
 		'ret-> RETURN expr',\
 		'statlist->statlist stat',
 		'statlist->stat',
 		'stat->IF expr THEN statlist elsepart END',
-		'stat->expr',)
-		
+		'stat->NAME init',
+		'elsepart->ELSE statlist',
+		'elsepart->ELSEIF expr THEN statlist elsepart',
+		'init->EQ expr',
+)	
+
 left = (('EQ', 0), ('ADD', 1), ('SUB', 1), ('MUL', 2), ('DIV', 2))
 if __name__ == '__main__':
-	gram_dict = {'start' : syntax_tbl[0], 'other' : syntax_tbl[1 : ], 'left_piority' : left}
-	gram = grammar.prepare_gram(gram_dict)
-	lalr.gen_parsetbl(gram, './parsetab', './dot_str')	
+#	gram_dict = {'start' : syntax_tbl[0], 'other' : syntax_tbl[1 : ], 'left_piority' : left}
+#	gram = grammar.prepare_gram(gram_dict)
+#	lalr.gen_parsetbl(gram, './parsetab', './dot_str')	
 	parse_tbl = json.load(open('./parsetab'))
-	text = "'tmp'=5.13+(1.11/2.2*(3.1*4))"
-	#text = '5.13+(1.11/2.2*(3.1*4))'
+	text = "_tmp=5.13+(1.11/2.2*(3.1*4))"
+	text = '''
+	function _func(_a, _b, _c)
+		_d = _b + _c
+		return _d
+	end
+'''
+	text = text.replace(' ', '').replace('\t', '').replace('\n', '')
 	ret, token_list = mini_regex.parse(lexical_tbl, text)
-	print ret, token_list
+#	print ret, token_list
 	lalr.parse(token_list, parse_tbl)
