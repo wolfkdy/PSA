@@ -31,7 +31,7 @@ class Regex(object):
 		self.dfa = None
 
 	#greedy strategy match,
-	#return True, len(text) - 1 if matches succ
+	#return True, left most match if prefix matches succ
 	#return False, right most match char if matches fail
 	def match(self, text):
 		if not self.compiled:
@@ -39,10 +39,13 @@ class Regex(object):
 		i = 0
 		now = self.dfa['start']
 		dfa = self.dfa['trans']
+		last_found = (False, 0, )
 		while i < len(text):
 			to_state = dfa[now].get(text[i])
 			if to_state is None:
 				break
+			if to_state in self.dfa['end']:
+				last_found = (True, i + 1, )
 			i += 1
 			now = to_state
 
@@ -50,8 +53,8 @@ class Regex(object):
 			if now in self.dfa['end']:
 				return True, i 
 			else :
-				return False, i
-		return False, i	
+				return last_found
+		return last_found
 
 	def minimize(self):
 		assert False, 'not implemented'
@@ -96,20 +99,25 @@ def parse(re_dict, text):
 	for k in re_dict.iterkeys():
 		re_dict[k] = Regex(re_dict[k]) 
 	ret = []
-	print text
-	while text:
-		leftmost, key = len(text) + 1, None
-		for k, v in re_dict.iteritems():
-			tmp_ret = v.match(text)
-			if tmp_ret[1] == 0: continue
-			if leftmost > tmp_ret[1]:
-				leftmost = tmp_ret[1]
-				key = k
-		if leftmost == len(text) + 1:
-			return False, None
-		ret.append((key, text[: leftmost]))
-	#	print ret
-		text = text[leftmost: ]
+	text = text.replace('\t', ' ').replace('\n', ' ')
+	texts = text.split(' ')
+	texts = [itm for itm in texts if itm != ' ']
+
+	for text in texts:
+		while text:
+			print text, '???'
+			found = False
+			for k, v in re_dict.iteritems():
+				tmp_ret = v.match(text)
+				if tmp_ret[0] == False :
+					continue
+				found = True
+				ret.append((k, text[ : tmp_ret[1]]))	
+				text = text[tmp_ret[1] : ]
+				print tmp_ret, text, '111'
+				break
+			if not found:
+				return False, None
 	return True, ret
 
 if __name__ == '__main__':

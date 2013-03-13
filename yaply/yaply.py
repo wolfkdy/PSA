@@ -34,8 +34,8 @@ def gen_s_s():
 #name literal
 def gen_n_s():
 	s = '|'.join([chr(ord('a') + i) for i in xrange(27)])
-	# 变量名必须以下划线开头,虽然没有这么做的必要，（如果不这么做，可以在词法分析的时候加额外判断)
-	return '_(%s)*' % s
+	print s
+	return '(%s)(%s)*' % (s, s, )
  
 lexical_tbl = {'NUM' : '(%s)(%s)*.(%s)*(%s)(%s)*' % (s_n, s_n, s_n, s_n, s_n),
 		'ADD'   : '+',
@@ -102,18 +102,17 @@ syntax_tbl = (  'expr->LP expr RP',
 
 left = (('EQ', 0), ('ADD', 1), ('SUB', 1), ('MUL', 2), ('DIV', 2))
 if __name__ == '__main__':
-#	gram_dict = {'start' : syntax_tbl[0], 'other' : syntax_tbl[1 : ], 'left_piority' : left}
-#	gram = grammar.prepare_gram(gram_dict)
+	gram_dict = {'start' : syntax_tbl[0], 'other' : syntax_tbl[1 : ], 'left_piority' : left}
+	gram = grammar.prepare_gram(gram_dict)
 #	lalr.gen_parsetbl(gram, './parsetab', './dot_str')	
 	parse_tbl = json.load(open('./parsetab'))
-	text = "_tmp=5.13+(1.11/2.2*(3.1*4))"
+	text = "tmp=5.13+(1.11/2.2*(3.1*4))"
 	text = '''
-	function _func(_a, _b, _c)
-		_d = _b + _c
-		return _d
+	function func(a, b, c)
+		d = b + c
+		return d
 	end
 '''
-	text = text.replace(' ', '').replace('\t', '').replace('\n', '')
 	ret, token_list = mini_regex.parse(lexical_tbl, text)
-#	print ret, token_list
+	print ret, token_list
 	lalr.parse(token_list, parse_tbl)
