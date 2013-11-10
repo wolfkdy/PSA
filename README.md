@@ -5,6 +5,8 @@ Python String Automata
 
 some experimental implemention of string automations written in python
 
+Contains a fully implemented LALR(1) compiler frontend( may be imaged as ply or lex&yacc)
+
 (AhoCorasick AutoMata, 
 Ukkonen's suffixTree, 
 MYT's automata for compiling regex and lexical analysis
